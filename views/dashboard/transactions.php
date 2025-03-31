@@ -1,0 +1,1 @@
+<?= app\widgets\LatestTransactions::widget() ?>

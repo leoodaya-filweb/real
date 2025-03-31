@@ -1,0 +1,232 @@
+.chat-module .overflow-auto::-webkit-scrollbar,
+.chat-module .modal-body::-webkit-scrollbar {
+    width: 4px;
+    background-color: #FFFFFF; 
+}
+
+.chat-module .overflow-auto::-webkit-scrollbar-thumb,
+.chat-module .modal-body::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
+    background-color: #E4E6EF; 
+}
+
+.chat-module .private-members-list {
+    display: none;
+    overflow-wrap: anywhere;
+}
+
+.chat-module .chat-modal{
+  text-align: left;
+}
+
+.chat-module .message-type-label {
+	text-align: center;margin: 1rem 0
+}
+
+.chat-module .message-type-label .sender-photo,
+.chat-module .img-circle {
+	border-radius: 50px;
+}
+
+.chat-module .img-circle-new-space {
+  border-radius: 50px;
+    height: 100%;
+    margin: auto;
+}
+
+.chat-module .messages-body {
+	height: 63vh;
+}
+.chat-module .h30px {
+  height: 30px;
+}
+.chat-module .btn-attach-file {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+
+
+
+.chat-module .space-message-list-container {
+  /*display: flex;*/
+  /*flex-direction: column-reverse;*/
+}
+
+[v-cloak] {
+  display: none;
+}
+
+
+
+
+
+
+
+
+.chat-module .modal-mask {
+  position: fixed;
+  z-index: 98;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: table;
+  transition: opacity 0.3s ease;
+}
+
+.chat-module .modal-wrapper {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.chat-module .modal-container {
+  width: 50vw;
+  min-width: 30rem;
+  margin: 0px auto;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.33);
+  transition: all 0.3s ease;
+}
+.chat-module .modal-body {
+  overflow: auto;
+  height: auto;
+  max-height: 75vh;
+}
+
+.chat-module .modal-default-button {
+  float: right;
+}
+.chat-module .modal-header h3 {
+  margin: auto 0;
+}
+
+
+
+/*
+ * The following styles are auto-applied to elements with
+ * transition="modal" when their visibility is toggled
+ * by Vue.js.
+ *
+ * You can easily play with the modal transition by editing
+ * these styles.
+ */
+
+.chat-module .modal-enter {
+  opacity: 0;
+}
+
+.chat-module .modal-leave-active {
+  opacity: 0;
+}
+
+.chat-module .modal-enter .modal-container,
+.chat-module .modal-leave-active .modal-container {
+  -webkit-transform: scale(1.1);
+  transform: scale(1.1);
+}
+
+
+
+
+
+
+
+
+/**/
+.chat-module .type-options .option {
+  cursor: pointer;
+}
+
+.chat-module .error-summary {
+  background: #F64E60;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    color: #fff;
+    border-radius: 4px;
+    text-align: left;
+}
+
+.chat-module .space-list {
+  height: 63vh;
+}
+
+.chat-module .user-list:hover {
+  background: #f3f6f9;
+}
+
+.chat-module .absolute-right {
+  position: absolute;
+    right: 0;
+}
+
+
+.chat-module .message-attachments {
+  border-radius: 4px;
+  cursor: pointer;
+}
+.chat-module .message-container {
+    border-left: 1px dashed #ccc;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.chat-module .br4px{
+  border-radius: 4px;
+}
+.chat-module .w-49{
+  width: 49%;
+}
+.chat-module .d-content{
+  display: contents;
+}
+
+
+
+
+.dropzone.dropzone-default .dz-remove {
+  font-size: 12px !important;
+  font-size: 12px !important;
+  margin-top: 10px !important;
+  background: #F64E60;
+  color: #fff;
+  border-radius: 5px;
+  width: min-content;
+  margin: 0 auto;
+  padding: 2px 10px;
+}
+.dropzone.dropzone-default .dz-remove:hover {
+  background: #EE2D41;
+  color: #fff;
+}
+.dropzone .dz-preview.dz-error .dz-error-message {
+  margin-top: 30px;
+}
+
+
+
+
+.chat-module .message-is-receiver {
+  border-top-left-radius: 0 !important;
+}
+
+.chat-module .message-is-sender {
+  border-top-right-radius: 0 !important;
+}
+.chat-module .mw-300 {
+  max-width: 300px;
+}
+
+.chat-module .view-attachment-files-container {
+      border: 1px dashed #ccc;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+.chat-module .btn-scroller {
+position: relative; top: -1em;
+}
+
+

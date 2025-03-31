@@ -1,0 +1,1 @@
+<i class="fas fa-print text-primary"></i>

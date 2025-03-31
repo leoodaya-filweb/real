@@ -1,0 +1,1 @@
+<?= \app\widgets\SearchQrCode::widget(); ?>

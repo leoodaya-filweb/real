@@ -1,0 +1,224 @@
+.app-scroll::-webkit-scrollbar,
+#kt_quick_panel::-webkit-scrollbar {
+    width: 5px;
+}
+.app-scroll::-webkit-scrollbar-track,
+#kt_quick_panel::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.2); 
+    border-radius: 10px;
+}
+
+.app-scroll::-webkit-scrollbar-thumb,
+#kt_quick_panel::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,24%); 
+}
+
+th {
+    text-transform: uppercase;
+}
+
+.help-block {
+    color: #F64E60;
+    font-size: 0.9rem;
+    font-weight: 400;
+}  
+
+.kt_quick_panel {
+    z-index: 9;
+}
+
+.daterangepicker {
+    z-index: 99999;
+}
+
+#kt_quick_panel {
+    overflow: auto;
+} 
+
+.mw200 {
+    max-width: 200px;
+}
+
+/*@page {
+    size: A4;
+    margin: 0;
+}
+@media print {
+    html, body {
+        width: 210mm;
+        height: 297mm;
+    }
+}*/
+
+th[data-key="actions"] {
+    text-align: center;
+}
+td[data-key="checkbox"] {
+    width: 20px;
+}
+.table th, .table td {
+    vertical-align: middle;
+}
+
+.page-loading * {
+    /*opacity: 0;*/
+    cursor: progress;
+    /*pointer-events: none;*/
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+    -khtml-user-select: none; /* Konqueror HTML */
+    -moz-user-select: none; /* Old versions of Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    user-select: none; /* Non-prefixed version, currently
+        supported by Chrome, Edge, Opera and Firefox */
+}
+
+.disabled:hover {
+    cursor: no-drop;
+}
+.aside-minimize-hover .user-side-nav {
+    display: block !important;
+}
+
+::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+  color: #3F4254;
+  font-weight: 500;
+}
+::-moz-placeholder { /* Firefox 19+ */
+  color: #3F4254;
+  font-weight: 500;
+}
+:-ms-input-placeholder { /* IE 10+ */
+  color: #3F4254;
+  font-weight: 500;
+}
+:-moz-placeholder { /* Firefox 18- */
+  color: #3F4254;
+  font-weight: 500;
+}
+.badge-facebook {
+    background: #3b5998;
+    color: #fff;
+}
+.badge-twitter {
+    background: #1da1f2;
+    color: #fff;
+}
+select.kt-selectpicker.is-invalid + button.dropdown-toggle {
+    border-color: #F64E60 !important;
+}
+select.kt-selectpicker.is-valid + button.dropdown-toggle {
+    border-color: #1BC5BD !important;
+}
+.app-hidden {
+    width: 0;
+    height: 0;
+    border: none;
+    position: absolute;
+    background: transparent;
+    color: transparent;
+}
+.status-new-transaction {
+    color: #fff;
+}
+.status-mswdo-head-declined {
+    background-color: #c94b4b !important;
+    border-color: #c94b4b !important;
+    color: #fff !important;
+}
+.status-mayor-declined {
+    background-color: #ff49b6 !important;
+    border-color: #ff49b6 !important;
+    color: #fff !important;
+}
+.status-budget-officer-certified {
+    background-color: #007396 !important;
+    border-color: #007396 !important;
+    color: #fff !important;
+}
+.status-disbursed {
+    background-color: #089f4b !important;
+    border-color: #089f4b !important;
+    color: #fff !important;
+}
+.status-completed {
+    background-color: #068d88 !important;
+    border-color: #068d88 !important;
+    color: #fff !important;
+}
+.status-certificate-created {
+    background-color: #2f8901 !important;
+    border-color: #2f8901 !important;
+    color: #fff !important;
+}
+.status-mswdo-clerk-approved {
+    background-color: #28936b !important;
+    border-color: #28936b !important;
+    color: #fff !important;
+}
+.status-for-disbursement {
+    background-color: #51a336 !important;
+    border-color: #51a336 !important;
+    color: #fff !important;
+}
+.status-payment-completed {
+    background-color: #2a6c48 !important;
+    border-color: #2a6c48 !important;
+    color: #fff !important;
+}
+.status-id-released {
+    background-color: #3baf74 !important;
+    border-color: #3baf74 !important;
+    color: #fff !important;
+}
+.status-mho-processing {
+    background-color: #ad9b1f !important;
+    border-color: #ad9b1f !important;
+    color: #fff !important;
+}
+.status-mswdo-clerk-processing {
+    background-color: #bd7406 !important;
+    border-color: #bd7406 !important;
+    color: #fff !important;
+}
+.status-mswdo-head-processing {
+    background-color: #ff8100 !important;
+    border-color: #ff8100 !important;
+    color: #fff !important;
+}
+.status-mayor-processing {
+    background-color: #9ca510 !important;
+    border-color: #9ca510 !important;
+    color: #fff !important;
+}
+.status-budget-officer-processing {
+    background-color: #d58e3d !important;
+    border-color: #d58e3d !important;
+    color: #fff !important;
+}
+.status-accounting-officer-processing {
+    background-color: #d7ca2f !important;
+    border-color: #d7ca2f !important;
+    color: #fff !important;
+}
+.status-disbursing-officer-processing {
+    background-color: #ff5e00 !important;
+    border-color: #ff5e00 !important;
+    color: #fff !important;
+}
+.status-accounting-officer-proofing {
+    background-color: #994d00 !important;
+    border-color: #994d00 !important;
+    color: #fff !important;
+}
+.status-treasurer-processing {
+    background-color: #87bd03 !important;
+    border-color: #87bd03 !important;
+    color: #fff !important;
+}
+.status-for-white-card-creation {
+    background-color: #ff8800 !important;
+    border-color: #ff8800 !important;
+    color: #fff !important;
+}
