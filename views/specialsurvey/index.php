@@ -371,32 +371,32 @@ CSS, ['type' => "text/css"]);
                       source: 'voters'
                       }, 'aeroway-polygon');
                       
-                       // Handle filter changes
-                        $('#checkbox-colors input:checkbox').change(function() {
-                            const color_survey = $("#checkbox-colors input:checkbox:checked").map(function() {
-                                return $(this).val();
-                            }).get();
-                            updateMapWithDominantBarangay(color_survey);
-                        });
+                    //    // Handle filter changes
+                    //     $('#checkbox-colors input:checkbox').change(function() {
+                    //         const color_survey = $("#checkbox-colors input:checkbox:checked").map(function() {
+                    //             return $(this).val();
+                    //         }).get();
+                    //         updateMapWithDominantBarangay(color_survey);
+                    //     });
 
-                        // Function to update the map with dominant barangay based on selected color
-                        function updateMapWithDominantBarangay(color_survey) {
-                            const barangayUrl = app.baseUrl + 'specialsurvey/barangay-coordinates?color_survey=' + color_survey.join(',');
+                    //     // Function to update the map with dominant barangay based on selected color
+                    //     function updateMapWithDominantBarangay(color_survey) {
+                    //         const barangayUrl = app.baseUrl + 'specialsurvey/barangay-coordinates?color_survey=' + color_survey.join(',');
                             
-                            $.ajax({
-                                url: barangayUrl,
-                                method: 'GET',
-                                dataType: 'json',
-                                success: (data) => {
-                                    const dominantBarangay = data.dominantBarangay;
-                                    map.getSource('barangay-coordinates').setData(dominantBarangay);
-                                    map.setPaintProperty('barangay-coordinates', 'fill-color', dominantBarangay.color);
-                                },
-                                error: (err) => {
-                                    console.log('Error fetching dominant barangay data:', err);
-                                }
-                            });
-                        }
+                    //         $.ajax({
+                    //             url: barangayUrl,
+                    //             method: 'GET',
+                    //             dataType: 'json',
+                    //             success: (data) => {
+                    //                 const dominantBarangay = data.dominantBarangay;
+                    //                 map.getSource('barangay-coordinates').setData(dominantBarangay);
+                    //                 map.setPaintProperty('barangay-coordinates', 'fill-color', dominantBarangay.color);
+                    //             },
+                    //             error: (err) => {
+                    //                 console.log('Error fetching dominant barangay data:', err);
+                    //             }
+                    //         });
+                    //     }
                       
                       
                        let populationClick= 0;
@@ -464,7 +464,7 @@ CSS, ['type' => "text/css"]);
                        
                        
                        
-                    const dataUrl = app.baseUrl + 'specialsurvey/barangay-coordinates';
+                    const dataUrl = app.baseUrl + 'specialsurvey/barangay-coordinates1';
                     const changePaint = (url) => {
                         $.ajax({
                             url,

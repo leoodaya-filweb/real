@@ -431,7 +431,7 @@ t.*,
         }
         
         if($brgy==1){
-         $mdata = Barangay::find()->limit(3)->all();
+         $mdata = Barangay::find()->all();
         
          foreach($mdata as $key=>$row){
 		
@@ -529,90 +529,6 @@ t.*,
         
     }
 
-
-
-    public function actionBarangayCoordinates2($criteria = '')
-{
-    error_reporting(E_ERROR);
-    $survey_color = Specialsurvey::surveyColorReIndex();
-
-    $queryParams = App::queryParams();
-    $criteria = $criteria ?: 1;
-
-    if (isset($queryParams['color_survey'])) {
-        $color_survey = explode(',', $queryParams['color_survey']);
-    } else {
-        $color_survey = [];
-    }
-
-    $searchModel = new SpecialsurveySearch();
-    $dataProvider = $searchModel->searchsummary(['SpecialsurveySearch' => $queryParams]);
-
-    if (!empty($color_survey)) {
-        $dataProvider->query->andFilterWhere(['t.criteria'.$criteria.'_color_id' => $color_survey]);
-    }
-
-    $mdata = $dataProvider->getModels();
-    \Yii::debug($mdata, 'mdata');
-
-    $barangay_data = ArrayHelper::index($mdata, 'barangay');
-    \Yii::debug($barangay_data, 'barangay_data');
-
-    $address = App::setting('address');
-
-    $coordinates = BarangayCoordinates::find()
-        ->select(["country", "province", "municipality", 'barangay', "coordinates"])
-        ->where([
-            'municipality' => $address->municipalityName,
-            'province' => $address->provinceName,
-        ])
-        ->asArray()
-        ->all();
-
-    $dominantBarangays = [];
-
-    foreach ($coordinates as $row) {
-        $barangay = $row['barangay'];
-        \Yii::debug($row, 'barangay_coordinates');
-
-        if (!isset($barangay_data[$barangay])) {
-            \Yii::debug("Barangay not found: " . $barangay, 'missing_barangay');
-
-            continue;
-        }
-
-        // Get counts for each color
-        $total_black = $barangay_data[$barangay]["criteria{$criteria}_color_black"] ?? 0;
-        $total_gray = $barangay_data[$barangay]["criteria{$criteria}_color_gray"] ?? 0;
-        $total_green = $barangay_data[$barangay]["criteria{$criteria}_color_green"] ?? 0;
-        $total_red = $barangay_data[$barangay]["criteria{$criteria}_color_red"] ?? 0;
-
-        // Get dominant color for the barangay
-        $color_dom = $searchModel->getDominantColor(
-            $total_black, $total_gray, $total_green, $total_red
-        );
-        \Yii::debug($color_dom, 'color_dom');
-
-        // Check if the dominant color is one of the selected filters
-        if (in_array($color_dom['color'], $color_survey)) {
-            \Yii::debug("Match found: " . $barangay . " => " . $color_dom['color'], 'match');
-
-            $row['color'] = $color_dom['color'];
-            $dominantBarangays[] = [
-                "barangay" => $row['barangay'],
-                "color" => $row['color'],
-                "geometry" => json_decode($row['coordinates'], true),
-            ];
-        }else{
-            \Yii::debug("No match: " . $barangay . " => " . $color_dom['color'], 'no_match');
-
-        }
-    }
-
-    return $this->asJson([
-        "dominantBarangay" => $dominantBarangays
-    ]);
-}
 
 
     public function actionBarangayCoordinates($criteria = '')
@@ -785,7 +701,6 @@ t.*,
     }
 
 
-
 	public function actionReportPerBarangay($print=null)
     {
         $searchModel = new SpecialsurveySearch();
@@ -810,7 +725,6 @@ t.*,
 			'rowsummary' => $rowsummary,
         ]);
     }
-    
     
     
     
@@ -1181,15 +1095,15 @@ t.*,
         // Render the page with the color data, gray data, and other analysis
         return $this->render('conversion_rate_analysis', [
             'labels' => json_encode(array_map(function($survey, $period) {
-                return $survey . "\n(" . $period . ")";
+                return $survey . " (" . $period . ")";
             }, $surveyLabels, $periods)),
             'periods' => json_encode($periods),
             'colorData' => json_encode($data),
             'grayData' => json_encode($grayVoterData),
         ]);
+        
+        
     }
-    
-    
     
     
     
@@ -1315,7 +1229,181 @@ t.*,
     }
     
     
+    public function actionBarangayCoordinates1($criteria = '')
+    {
+        error_reporting(E_ERROR);
+        $survey_color = Specialsurvey::surveyColorReIndex();
     
+        $queryParams = App::queryParams();
+    
+        if (isset($queryParams['criteria1_color_id'])) {
+            unset($queryParams['criteria1_color_id']);
+            $criteria = $criteria ?: 1;
+        }
+        if (isset($queryParams['criteria2_color_id'])) {
+            unset($queryParams['criteria2_color_id']);
+            $criteria = $criteria ?: 2;
+        }
+        if (isset($queryParams['criteria3_color_id'])) {
+            unset($queryParams['criteria3_color_id']);
+            $criteria = $criteria ?: 3;
+        }
+        if (isset($queryParams['criteria4_color_id'])) {
+            unset($queryParams['criteria4_color_id']);
+            $criteria = $criteria ?: 4;
+        }
+        if (isset($queryParams['criteria5_color_id'])) {
+            unset($queryParams['criteria5_color_id']);
+            $criteria = $criteria ?: 5;
+        }
+        $criteria = $criteria ?: 1;
+    
+        if ($queryParams['bgygraph'] == 1) {
+            return $this->renderAjax('voter_barangay_graph', [
+                'queryParams' => $queryParams,
+                'criteria' => $criteria
+            ]);
+        }
+    
+        $searchModel = new SpecialsurveySearch();
+        $dataProvider = $searchModel->searchsummary(['SpecialsurveySearch' => $queryParams]);
+    
+        $color_survey = $queryParams['color_survey'];
+        if ($color_survey) {
+            $color_survey = explode(',', $color_survey);
+        }
+    
+        $mdata = $dataProvider->getModels();
+        $barangay_data = ArrayHelper::index($mdata, 'barangay');
+        $address = App::setting('address');
+    
+        $coordinates = BarangayCoordinates::find()
+            ->select([
+                "country",
+                "province",
+                "municipality",
+                'barangay',
+                "coordinates",
+                "color"
+            ])
+            ->where([
+                'municipality' => $address->municipalityName,
+                'province' => $address->provinceName,
+            ])
+            ->andFilterWhere([
+                'barangay' => $searchModel->barangay
+            ])
+            ->asArray()
+            ->all();
+    
+        $features = [];
+        $color_map = [
+            1 => "#181c32", // Black
+            2 => "#e4e6ef", // Gray
+            3 => "#1bc5bd", // Green
+            4 => "#f64e60"  // Red
+        ];
+    
+        foreach ($coordinates as $row) {
+            $coordinates = json_decode($row['coordinates'], true);
+            $total_black = $barangay_data[$row['barangay']]["criteria{$criteria}_color_black"] ?? 0;
+            $total_gray = $barangay_data[$row['barangay']]["criteria{$criteria}_color_gray"] ?? 0;
+            $total_green = $barangay_data[$row['barangay']]["criteria{$criteria}_color_green"] ?? 0;
+            $total_red = $barangay_data[$row['barangay']]["criteria{$criteria}_color_red"] ?? 0;
+    
+            $barangay_colors = [
+                1 => $total_black,
+                2 => $total_gray,
+                3 => $total_green,
+                4 => $total_red
+            ];
+    
+            arsort($barangay_colors);
+            $dominant_color_id = key($barangay_colors);
+            $dominant_color = $color_map[$dominant_color_id] ?? "#E4E6EF";
+    
+            // Ensure correct filtering logic
+            if (!empty($color_survey) && !in_array($dominant_color_id, $color_survey)) {
+                
+                $dominant_color = "#808080"; // Default color for excluded barangays
+            }
+    
+            $household_colors = [];
+            foreach (App::setting('surveyColor')->survey_color as $key => $sc) {
+                $household_colors[] = [
+                    'label' => $sc['label'],
+                    'total' => Html::number($barangay_colors[$key + 1] ?? 0),
+                    'color' => $sc['color'],
+                ];
+            }
+
+            
+            if(	$row['barangay']=="Poblacion 61 (Barangay 2)"){
+                    $row['barangay']='Poblacion 61';
+            }elseif($row['barangay']=="Poblacion I (Barangay 1)"){
+                $row['barangay']='Poblacion 1';
+            }
+    
+            $features[] = [
+                "type" => "Feature",
+                "properties" => [
+                    "barangay" => $row['barangay'],
+                    "color" => $dominant_color,
+                    "household" => Html::number(array_sum($barangay_colors)),
+                    "household_colors" => $household_colors,
+                    "url_link" => Url::to([
+                        'specialsurvey/report-per-purok',
+                        'barangay' => $row['barangay'],
+                        'groupPurok' => true
+                    ], true),
+                ],
+                "geometry" => [
+                    "type" => "Polygon",
+                ]
+            ];
+        }
+    
+        $data = [];
+        foreach ($features as $feature) {
+            $prop = $feature['properties'];
+            $data[$prop['color']][] = $prop['barangay'];
+        }
+    
+        $output = ["match", ["get", "barangay"]];
+        foreach ($data as $color => $barangays) {
+            $output[] = $barangays;
+            $output[] = $color;
+        }
+
+        
+        $output[] = "#808080";
+    
+        if ($queryParams['graph'] == 1) {
+            return $this->renderAjax('_graph', [
+                'features' => $features,
+                'queryParams' => $queryParams,
+            ]);
+        }
+    
+        $purok = [];
+        if ($searchModel->barangay) {
+            $purok = Specialsurvey::find()->select(['purok'])->andWhere("purok is not null and purok not in('','-','0') ")
+                ->andFilterWhere(['barangay' => $searchModel->barangay])->groupBy("purok")->orderby(['purok' => SORT_ASC])
+                ->asArray()->all();
+        }
+    
+        return $this->asJsonNumeric([
+            "type" => "FeatureCollection",
+            "features" => $features,
+            "output" => $output,
+            "queryParams" => $queryParams,
+            "purok" => $purok,
+            'preview' => $this->renderPartial('_features', [
+                'features' => $features
+            ])
+        ]);
+    }
+
     
         
 

@@ -55,7 +55,7 @@ $this->registerJs(<<<JS
 
     function renderChart(selectedColorId) {
         var selectedColor = colorData.find(item => item.id == selectedColorId);
-        
+
         var series = [{ 
             name: 'Gray Voters', 
             data: grayData, 
@@ -75,7 +75,7 @@ $this->registerJs(<<<JS
                 type: 'line', 
                 height: 500, 
                 toolbar: { show: false }, 
-                zoom: { enabled: false } // Disables zoom for a cleaner view
+                zoom: { enabled: false }
             },
             series: series,
             xaxis: { 
@@ -83,21 +83,27 @@ $this->registerJs(<<<JS
                     text: 'Survey Period',
                     style: { fontSize: '15px', fontWeight: '500', padding: { top: 10, bottom: 10 } }
                 },
-                categories: labels, 
+                categories: labels,
                 labels: {
-                    rotate: -90,
-                    rotateAlways: true, // Always rotate labels, even if they fit
+                    rotate: -45, // Reduce the rotation to -45 for better space handling
+                    rotateAlways: true,
                     style: {
-                        fontSize: '12px',
+                        fontSize: '12px', // Reduced font size for better readability
                         fontWeight: '600',
                         colors: '#666',
                         padding: { top: 10, bottom: 10 }
                     },
-                    trim: false
+                    trim: false,
+                    
                 },
                 axisBorder: { show: true, color: '#ddd' },
                 tickPlacement: 'on',
-                position: 'bottom'
+                position: 'bottom',
+                // Allow more space between labels
+                padding: {
+                    left: 10,
+                    right: 10
+                }
             },
             yaxis: {
                 title: { 
@@ -144,22 +150,16 @@ $this->registerJs(<<<JS
             tooltip: {
                 theme: 'dark',
                 x: { format: 'dd MMM HH:mm' }
-            },
-            // fill: {
-            //     type: 'gradient',
-            //     gradient: {
-            //         shadeIntensity: 0.5,
-            //         opacityFrom: 0.7,
-            //         opacityTo: 0.3,
-            //         stops: [0, 90, 100]
-            //     }
-            // }
+            }
         };
 
         document.querySelector("#line-chart").innerHTML = "";
+
         var chart = new ApexCharts(document.querySelector("#line-chart"), options);
         chart.render();
-    }
+}
+
+
 
 
     // Initial render with first color (if available)
