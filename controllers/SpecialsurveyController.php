@@ -843,7 +843,7 @@ t.*,
             $total_gray = $barangay_data[$row['barangay']]["criteria1_color_gray"] ?? 0;
 
             // Force the color to Gray
-            $row['color'] = "#808080";
+            $row['color'] = "#e4e6ef";
 
             $household_colors = [
                 [
@@ -857,7 +857,7 @@ t.*,
                 "type" => "Feature",
                 "properties" => [
                     "barangay" => $row['barangay'],
-                    "color" => "#808080",
+                    "color" => "#e4e6ef",
                     "percentage" => 100,
                     "household" => Html::number($total_gray),
                     "household_colors" => $household_colors,
@@ -880,7 +880,7 @@ t.*,
             $output[] = $barangays;
             $output[] = $color;
         }
-        $output[] = "#808080"; // Default to Gray
+        $output[] = "#e4e6ef";
 
         if (isset($queryParams['graph']) && isset($queryParams['grey']) && $queryParams['graph'] == 1 && $queryParams['grey'] == 1) {
             return $this->renderAjax('_grey_graph', [
