@@ -1337,7 +1337,7 @@ t.*,
                 ];
             }
 
-            
+
             if(	$row['barangay']=="Poblacion 61 (Barangay 2)"){
                     $row['barangay']='Poblacion 61';
             }elseif($row['barangay']=="Poblacion I (Barangay 1)"){
@@ -1407,6 +1407,16 @@ t.*,
     
         
 
+    public function actionSurveys($survey = null)
+    {
+        $surveys = Specialsurvey::find()
+            ->select(['id', 'survey_name', 'last_name', 'first_name', 'middle_name', 'criteria1_color_id'])
+            ->where(['survey_name' => $survey, 'barangay' => 'Bagong Silang'])
+            ->orderBy(['criteria1_color_id'=> SORT_ASC])
+            ->all();
+
+        return $this->asJson(['Count' => count($surveys)    ,'surveys' => $surveys ]);
+    }
     
     // public function actionConvertedVoters($criteria = 2, $color_survey = 1)
     // {

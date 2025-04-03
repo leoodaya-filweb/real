@@ -81,7 +81,7 @@ $this->registerJs(<<<JS
             xaxis: { 
                 title: { 
                     text: 'Survey Period',
-                    style: { fontSize: '15px', fontWeight: '500', padding: { top: 10, bottom: 10 } }
+                    style: { fontSize: '15px', fontWeight: '500', padding: { top: 20, bottom: 10 } }
                 },
                 categories: labels,
                 labels: {
