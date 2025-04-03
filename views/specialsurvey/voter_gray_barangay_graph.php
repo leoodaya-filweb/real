@@ -15,10 +15,6 @@ if (!$selectedSurvey) {
     $selectedSurvey = "Survey 1";
 }
 
-if (!$selectedBarangay) {
-    return; // Do not display anything if no barangay is selected
-}
-
 // Get the list of all surveys
 $surveys = Specialsurvey::find()
     ->select('survey_name')
@@ -29,63 +25,68 @@ $surveys = Specialsurvey::find()
 $surveyIndex = array_search($selectedSurvey, $surveys);
 $previousSurvey = $surveyIndex > 0 ? $surveys[$surveyIndex - 1] : null;
 
-$previousGrayVotersQuery = Specialsurvey::find()
-    ->select(['last_name', 'first_name', 'middle_name', 'household_no', 'precinct_no', 'barangay', 'criteria1_color_id'])
-    ->where(['survey_name' => $previousSurvey]) // Previous survey
-    ->andWhere(['criteria1_color_id' => 2]) // Only gray voters
-    ->andWhere(['barangay'=> $selectedBarangay])
-    ->asArray()
-    ->all();
+// Get barangays based on the selected barangay or all barangays if none is selected
+$barangaysQuery = Specialsurvey::find()
+    ->select('barangay')
+    ->distinct()
+    ->orderBy(['barangay' => SORT_ASC]);
 
-$currentChangedVotersQuery = Specialsurvey::find()
-    ->select(['last_name', 'first_name', 'middle_name', 'household_no', 'precinct_no', 'barangay', 'criteria1_color_id'])
-    ->where(['survey_name' => $selectedSurvey]) 
-    ->andWhere(['in', 'household_no', ArrayHelper::getColumn($previousGrayVotersQuery, 'household_no')]) // Only from households with gray voters in previous survey
-    ->andWhere(['<>', 'criteria1_color_id', 2])
-    ->andWhere(['barangay' => $selectedBarangay])
-    ->asArray()
-    ->all();
-
-$currentGrayVotersQuery = Specialsurvey::find()
-    ->select(['last_name', 'first_name', 'middle_name', 'household_no', 'precinct_no', 'barangay', 'criteria1_color_id'])
-    ->where(['survey_name' => $selectedSurvey]) 
-    ->andWhere(['criteria1_color_id' => 2]) 
-    ->andWhere(['barangay' => $selectedBarangay])
-    ->asArray()
-    ->all();
-
-$barangay_labels = [$selectedBarangay];
-$series = ['gray' => 0, 'black' => 0, 'green' => 0, 'red' => 0];
-
-foreach ($previousGrayVotersQuery as $row) {
-    $matchedVoters = array_filter($currentChangedVotersQuery, function($currentVoter) use ($row) {
-        return $currentVoter['household_no'] === $row['household_no'];
-    });
-
-    if (!empty($matchedVoters)) {
-        foreach ($matchedVoters as $matchedVoter) {
-            switch ($matchedVoter['criteria1_color_id']) {
-                case 1: // Black voters
-                    $series['black']++;
-                    break;
-                case 3: // Green voters
-                    $series['green']++;
-                    break;
-                case 4: // Red voters
-                    $series['red']++;
-                    break;
-            }
-        }
-    }
+if ($selectedBarangay) {
+    $barangaysQuery->andWhere(['barangay' => $selectedBarangay]);
 }
 
-$series['gray'] = count($currentGrayVotersQuery);
+$barangays = $barangaysQuery->column();
+
+$series = ['gray' => [], 'black' => [], 'green' => [], 'red' => []];
+$barangay_labels = [];
+
+foreach ($barangays as $barangay) {
+    $previousGrayVotersQuery = Specialsurvey::find()
+        ->select(['household_no'])
+        ->where(['survey_name' => $previousSurvey, 'criteria1_color_id' => 2, 'barangay' => $barangay])
+        ->asArray()
+        ->all();
+    
+    $currentChangedVotersQuery = Specialsurvey::find()
+        ->select(['household_no', 'criteria1_color_id'])
+        ->where(['survey_name' => $selectedSurvey, 'barangay' => $barangay])
+        ->andWhere(['in', 'household_no', ArrayHelper::getColumn($previousGrayVotersQuery, 'household_no')])
+        ->andWhere(['<>', 'criteria1_color_id', 2])
+        ->asArray()
+        ->all();
+    
+    $currentGrayVotersQuery = Specialsurvey::find()
+        ->where(['survey_name' => $selectedSurvey, 'criteria1_color_id' => 2, 'barangay' => $barangay])
+        ->count();
+    
+    $barangay_labels[] = $barangay;
+    $convertedCounts = ['black' => 0, 'green' => 0, 'red' => 0];
+    
+    foreach ($currentChangedVotersQuery as $matchedVoter) {
+        switch ($matchedVoter['criteria1_color_id']) {
+            case 1:
+                $convertedCounts['black']++;
+                break;
+            case 3:
+                $convertedCounts['green']++;
+                break;
+            case 4:
+                $convertedCounts['red']++;
+                break;
+        }
+    }
+    
+    $series['gray'][] = $currentGrayVotersQuery;
+    $series['black'][] = $convertedCounts['black'];
+    $series['green'][] = $convertedCounts['green'];
+    $series['red'][] = $convertedCounts['red'];
+}
 
 $chart_data = [
-    ['name' => "Current Gray Voters", 'data' => [$series['gray']]],
-    ['name' => "Converted to Black", 'data' => [$series['black']]],
-    ['name' => "Converted to Green", 'data' => [$series['green']]],
-    ['name' => "Converted to Red", 'data' => [$series['red']]],
+    ['name' => "Current Gray Voters", 'data' => $series['gray']],
+    ['name' => "Converted to Black", 'data' => $series['black']],
+    ['name' => "Converted to Green", 'data' => $series['green']],
+    ['name' => "Converted to Red", 'data' => $series['red']],
 ];
 
 $chart_data_json = json_encode($chart_data);
