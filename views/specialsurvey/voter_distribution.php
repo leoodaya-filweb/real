@@ -595,17 +595,17 @@ CSS, ['type' => "text/css"]);
                              const urllist = app.baseUrl + 'specialsurvey/?barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
                         
                            $.ajax({
-                            url: urllist,
-                            method: 'get',
-                            dataType: 'html',
-                            success: (s) => {
-                                //console.log(s);
-                               $('#content-listing').html(s);   
-                            },
-                            error: (e) => {
-                                console.log('e', e)
-                               
-                            }
+                                url: urllist,
+                                method: 'get',
+                                dataType: 'html',
+                                success: (s) => {
+                                    //console.log(s);
+                                $('#content-listing').html(s);   
+                                },
+                                error: (e) => {
+                                    console.log('e', e)
+                                
+                                }
                             });
                              
                   

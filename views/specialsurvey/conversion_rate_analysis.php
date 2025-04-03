@@ -85,11 +85,13 @@ $this->registerJs(<<<JS
                 },
                 categories: labels, 
                 labels: {
-                    rotate: -45,
+                    rotate: -90,
+                    rotateAlways: true, // Always rotate labels, even if they fit
                     style: {
                         fontSize: '12px',
                         fontWeight: '600',
-                        colors: '#666'
+                        colors: '#666',
+                        padding: { top: 10, bottom: 10 }
                     },
                     trim: false
                 },
@@ -143,15 +145,15 @@ $this->registerJs(<<<JS
                 theme: 'dark',
                 x: { format: 'dd MMM HH:mm' }
             },
-            fill: {
-                type: 'gradient',
-                gradient: {
-                    shadeIntensity: 0.5,
-                    opacityFrom: 0.7,
-                    opacityTo: 0.3,
-                    stops: [0, 90, 100]
-                }
-            }
+            // fill: {
+            //     type: 'gradient',
+            //     gradient: {
+            //         shadeIntensity: 0.5,
+            //         opacityFrom: 0.7,
+            //         opacityTo: 0.3,
+            //         stops: [0, 90, 100]
+            //     }
+            // }
         };
 
         document.querySelector("#line-chart").innerHTML = "";
@@ -219,7 +221,6 @@ JS);
  
      
     
-
 
  
  
