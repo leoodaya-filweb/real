@@ -1467,7 +1467,10 @@ t.*,
             if ($color_survey) {
                 $color_survey = explode(',', $color_survey);
                 
-            } 
+            } else {
+                $color_survey = [1,2,3,4];
+
+            }
             
 
             // Check if dominant color is in the requested color_survey list
