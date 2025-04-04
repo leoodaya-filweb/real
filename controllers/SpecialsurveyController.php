@@ -1409,13 +1409,7 @@ t.*,
     {
         $queryParams = App::queryParams();
         $criteria = $criteria ?: 1;
-        $color_survey = $queryParams['color_survey'];
-        if ($color_survey) {
-            $color_survey = explode(',', $color_survey);
-            
-        } else {
-            $color_survey = array_keys(App::setting('surveyColor')->survey_color);
-        }
+        
         
     
         // If brgy=1, just return all barangays for map label
@@ -1444,9 +1438,15 @@ t.*,
         // After getting the color counts
         $validBarangays = [];
         foreach ($barangays as $barangay) {
-            $colorCounts = Specialsurvey::find()
+            $query = Specialsurvey::find()
                 ->select(['criteria' . $criteria . '_color_id', 'COUNT(*) as total'])
-                ->where(['barangay' => $barangay->name, 'survey_name' => $queryParams['survey_name']])
+                ->where(['barangay' => $barangay->name]);
+
+            if (!empty($queryParams['survey_name'])) {
+                $query->andWhere(['survey_name' => $queryParams['survey_name']]);
+            }
+
+            $colorCounts = $query
                 ->groupBy('criteria' . $criteria . '_color_id')
                 ->indexBy('criteria' . $criteria . '_color_id')
                 ->asArray()
@@ -1467,9 +1467,7 @@ t.*,
             if ($color_survey) {
                 $color_survey = explode(',', $color_survey);
                 
-            } else {
-                $color_survey = array_keys(App::setting('surveyColor')->survey_color);
-            }
+            } 
             
 
             // Check if dominant color is in the requested color_survey list
