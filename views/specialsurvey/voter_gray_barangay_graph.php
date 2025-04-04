@@ -11,9 +11,6 @@ $queryParams = App::queryParams();
 $selectedSurvey = $queryParams['survey_name'] ?? null;
 $selectedBarangay = $queryParams['barangay'] ?? null;
 
-if (!$selectedSurvey) {
-    $selectedSurvey = "Survey 1";
-}
 
 // Get the list of all surveys
 $surveys = Specialsurvey::find()
@@ -25,6 +22,9 @@ $surveys = Specialsurvey::find()
 $surveyIndex = array_search($selectedSurvey, $surveys);
 $previousSurvey = $surveyIndex > 0 ? $surveys[$surveyIndex - 1] : null;
 
+if (!$selectedSurvey) {
+    $selectedSurvey = $surveys[0];
+}
 // Get barangays based on the selected barangay or all barangays if none is selected
 $barangaysQuery = Specialsurvey::find()
     ->select('barangay')

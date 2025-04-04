@@ -406,9 +406,9 @@ CSS, ['type' => "text/css"]);
                             method: 'get',
                             dataType: 'json',
                             success: (s) => {
-                                const layer = map.getLayer('gray-barangay--coordinates');
+                                const layer = map.getLayer('barangay--coordinates');
                                 if (layer) {
-                                    map.setPaintProperty('gray-barangay--coordinates', 'fill-color', s.output);
+                                    map.setPaintProperty('barangay--coordinates', 'fill-color', s.output);
                                 }
                                 
                              
@@ -521,7 +521,7 @@ CSS, ['type' => "text/css"]);
                          
                          
                          
-                        const urllist = app.baseUrl + 'specialsurvey/?barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
+                        const urllist = app.baseUrl + 'specialsurvey/voter-distribution?barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
                         
                         $.ajax({
                             url: urllist,
@@ -592,7 +592,7 @@ CSS, ['type' => "text/css"]);
                              changePaint(dataUrl + '?barangay='+barangay+'&criteria=' + criteria + '&survey_name=' + (survey_name || '')+ '&date_range=' + date_survey+'&color_survey='+color_survey+'&purok='+purok);
                              
                              
-                             const urllist = app.baseUrl + 'specialsurvey/?barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
+                             const urllist = app.baseUrl + 'specialsurvey/voter-distribution?barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
                         
                            $.ajax({
                                 url: urllist,
@@ -667,7 +667,13 @@ CSS, ['type' => "text/css"]);
       
  
     <div id="content-listing">
-      
+    <?= Html::beginForm(['bulk-action'], 'post'); ?>
+        <?= BulkAction::widget(['searchModel' => $searchModel]) ?>
+        <?= Grid::widget([
+            'dataProvider' => $dataProvider,
+            'searchModel' => $searchModel,
+        ]); ?>
+    <?= Html::endForm(); ?> 
       
                     
     </div>

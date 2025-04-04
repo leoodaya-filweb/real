@@ -905,18 +905,8 @@ t.*,
         $queryParams = App::queryParams();
     
         // Ensure criteria selection (Default to criteria2)
-        if (isset($queryParams['criteria1_color_id']) ||
-            isset($queryParams['criteria2_color_id']) ||
-            isset($queryParams['criteria3_color_id']) ||
-            isset($queryParams['criteria4_color_id']) ||
-            isset($queryParams['criteria5_color_id'])) {
-            unset($queryParams['criteria1_color_id']);
-            unset($queryParams['criteria2_color_id']);
-            unset($queryParams['criteria3_color_id']);
-            unset($queryParams['criteria4_color_id']);
-            unset($queryParams['criteria5_color_id']);
-            $criteria = 2;
-        }
+        $criteria = $criteria ?: 1;
+
     
         $dataProvider = $searchModel->search(['SpecialsurveySearch' => $queryParams]);
     
