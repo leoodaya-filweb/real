@@ -110,35 +110,85 @@ foreach ($barangays as $barangay) {
     $safeBarangayName = str_replace([' ', '-', '.', ',', '(', ')', '\\'], '_', $barangay);
 
     $this->registerWidgetJs("purokGraph" . $safeBarangayName, <<<JS
-    let data = {$chart_data[$barangay]};
-    let label = {$purok_labels_json};
-    
-    var options = {
-        series: data,
-        chart: { type: 'bar', height: 650, stacked: true },
-        plotOptions: { bar: { horizontal: true} },
-        stroke: { width: 1, colors: ['#fff'] },
-        title: { text: 'Purok Voters Color Breakdown for {$barangay}', align: 'left', style: { fontSize: '16px', fontWeight: 'bold' } },
-        xaxis: { categories: label },
-        tooltip: { y: { formatter: function (val) { return val + ' Voters'; } } },
-        fill: { opacity: 1 },
-        legend: { position: 'top', horizontalAlign: 'left', offsetX: 40 },
-        colors: ['#e4e6ef', '#181c32', '#1bc5bd', '#f64e60'],
-    };
-    
-    var chart = new ApexCharts(document.querySelector("#chart-purok{$safeBarangayName}"), options);
-    chart.render();
-JS);
+        let data = {$chart_data[$barangay]};
+        let label = {$purok_labels_json};
+        
+        var options = {
+            series: data,
+            chart: { type: 'bar', height: 650, stacked: true },
+            plotOptions: { bar: { horizontal: true} },
+            stroke: { width: 1, colors: ['#fff'] },
+            title: { text: 'Purok Voters Color Breakdown for {$barangay}', align: 'left', style: { fontSize: '16px', fontWeight: 'bold' } },
+            xaxis: { categories: label },
+            tooltip: { y: { formatter: function (val) { return val + ' Voters'; } } },
+            fill: { opacity: 1 },
+            legend: { position: 'top', horizontalAlign: 'left', offsetX: 40 },
+            colors: ['#e4e6ef', '#181c32', '#1bc5bd', '#f64e60'],
+        };
+        
+        var chart = new ApexCharts(document.querySelector("#chart-purok{$safeBarangayName}"), options);
+        chart.render();
+    JS);
+
+    $this->registerCss(<<< CSS
+        
+        /* Ensures that the row wraps the items properly */
+        .specialsurvey-index-page .row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0;  /* Remove extra margin from row */
+        }
+
+        /* Define columns to be 50% on medium screens and full-width on mobile */
+        .specialsurvey-index-page .col-md-6 {
+            width: 50%; /* Two charts per row */
+            padding: 0 10px; /* Small padding to separate the charts */
+            box-sizing: border-box;
+        }
+
+        /* Full width for smaller screens */
+        @media (max-width: 767px) {
+            .specialsurvey-index-page .col-md-6 {
+                width: 100%; /* Full width for smaller screens */
+                padding: 0;
+            }
+        }
+
+        /* Make sure the chart container is full width of the column */
+        .specialsurvey-index-page .chart-container {
+            width: 100%; /* Ensure chart container takes the full width */
+            height: 650px; /* You can adjust this height as needed */
+            margin-bottom: 20px; /* Space between the charts */
+        }
+
+        /* Optional: if you're facing issues with layout due to other styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        
+    CSS, ['type' => "text/css"]);
+
+
 
 }
 
 ?>
 
-<div class="specialsurvey-index-page    ">
+<div class="specialsurvey-index-page">
     <div class="mt-10"></div>
-    <hr/>
     
-    <?php foreach ($barangays as $barangay): ?>
-        <div id="chart-purok<?=str_replace([' ', '-', '.', ',', '(', ')', '\\'], '_', $barangay)?>"></div>
-    <?php endforeach; ?>
+    <div class="row">
+        <?php foreach ($barangays as $barangay): ?>
+           
+            <div class="col-12 col-md-6 mb-4"> <!-- Flex column taking 50% of the row on medium screens -->
+                <hr/>
+                <div id="chart-purok<?= str_replace([' ', '-', '.', ',', '(', ')', '\\'], '_', $barangay) ?>" class="chart-container"></div>
+            
+            </div>
+        <?php endforeach; ?>
+    </div>
 </div>
+

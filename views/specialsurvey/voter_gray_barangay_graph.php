@@ -120,7 +120,9 @@ JS);
     <div class="mt-10"></div>
     <div id="chart-barangay"></div>
     <div class="row">
-        <div class="col-md-6">
+
+    
+        <div class="col-md-12">
             <?= $this->render('voter_gray_purok_graph', ['queryParams' => $queryParams]) ?>
         </div>
     </div>
