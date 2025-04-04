@@ -37,8 +37,9 @@ $this->params['createTitle'] = 'Create Survey';
 
 $this->registerCss(<<< CSS
     #line-chart{
-        max-width: 100%; padding: 20px;
+        max-width: 100%; height: auto; padding: 50px;
     }
+   
     
 CSS, ['type' => "text/css"]);
 
@@ -70,6 +71,16 @@ $this->registerJs(<<<JS
             });
         }
 
+        // Split labels into arrays with line breaks
+        var formattedLabels = labels.map(function(value) {
+            var parts = value.split('(');
+            if (parts.length > 1) {
+                return [parts[0], '(' + parts[1]];  // Create an array with two parts
+            } else {
+                return [value];  // Return the label as a single part if no '(' is found
+            }
+        });
+
         var options = {
             chart: { 
                 type: 'line', 
@@ -83,9 +94,9 @@ $this->registerJs(<<<JS
                     text: 'Survey Period',
                     style: { fontSize: '15px', fontWeight: '500', padding: { top: 20, bottom: 10 } }
                 },
-                categories: labels,
+                categories: formattedLabels,  // Use the formatted labels array
                 labels: {
-                    rotate: -45, // Reduce the rotation to -45 for better space handling
+                    rotate: -45, // Adjust rotation for better readability
                     rotateAlways: true,
                     style: {
                         fontSize: '12px', // Reduced font size for better readability
@@ -93,13 +104,11 @@ $this->registerJs(<<<JS
                         colors: '#666',
                         padding: { top: 10, bottom: 10 }
                     },
-                    trim: false,
-                    
+                    trim: false
                 },
                 axisBorder: { show: true, color: '#ddd' },
                 tickPlacement: 'on',
                 position: 'bottom',
-                // Allow more space between labels
                 padding: {
                     left: 10,
                     right: 10
@@ -157,7 +166,8 @@ $this->registerJs(<<<JS
 
         var chart = new ApexCharts(document.querySelector("#line-chart"), options);
         chart.render();
-}
+    }
+
 
 
 
@@ -167,7 +177,7 @@ $this->registerJs(<<<JS
         renderChart(colorData[0].id);
         fetchVoterList(colorData[0].id);
     } else {
-        console.warn("No color data available to render the chart.");
+        // console.warn("No color data available to render the chart.");
     }
 
     function fetchVoterList(colorId) {
@@ -184,8 +194,9 @@ $this->registerJs(<<<JS
 
     // Handle dropdown change
     document.querySelector("#color-select")?.addEventListener("change", function() {
-        renderChart(this.value);
         fetchVoterList(this.value);
+        renderChart(this.value);
+       
     });
 
 JS);
@@ -217,7 +228,7 @@ JS);
 
 <div class="specialsurvey-index-page" >
     
-    <div class="mt-10"></div>
+    <div class="mt-5"></div>
  
      
     
@@ -226,7 +237,13 @@ JS);
  
     <h2 class="mb-5">List of Converted Voters</h2>
     <div id="voter-list">
-      
+    <?= Html::beginForm(['bulk-action'], 'post'); ?>
+        <?= BulkAction::widget(['searchModel' => $searchModel]) ?>
+        <?= Grid::widget([
+            'dataProvider' => $dataProvider,
+            'searchModel' => $searchModel,
+        ]); ?>
+    <?= Html::endForm(); ?> 
    
     </div>
     

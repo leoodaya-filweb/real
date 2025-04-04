@@ -1090,15 +1090,20 @@ t.*,
                 'dataProvider' => $dataProvider,
             ]);
         }
+
+
     
         // Render the page with the color data, gray data, and other analysis
         return $this->render('conversion_rate_analysis', [
             'labels' => json_encode(array_map(function($survey, $period) {
                 return $survey . " (" . $period . ")";
             }, $surveyLabels, $periods)),
+            // 'labels' => json_encode($surveyLabels),
             'periods' => json_encode($periods),
             'colorData' => json_encode($data),
             'grayData' => json_encode($grayVoterData),
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
         ]);
         
         
