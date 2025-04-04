@@ -1007,13 +1007,13 @@ t.*,
     
         // Get survey data for matching voters
         $surveyData = Specialsurvey::find()
-            ->select(['id', 'household_no', 'survey_name', 'criteria1_color_id', 'last_name', 'first_name', 'barangay'])
+            ->select(['id', 'household_no', 'survey_name', 'criteria1_color_id', 'last_name', 'first_name', 'middle_name', 'barangay'])
             ->orderBy(['survey_name' => SORT_ASC])
             ->all();
     
         $voterHistory = [];
         foreach ($surveyData as $survey) {
-            $voterKey = $survey->household_no . '_' . $survey->last_name . '_' . $survey->first_name;
+            $voterKey = $survey->household_no . '_' . $survey->last_name . '_' . $survey->first_name. '_' . $survey->middle_name;
             if (!isset($voterHistory[$voterKey])) {
                 $voterHistory[$voterKey] = [];
             }
@@ -1032,19 +1032,18 @@ t.*,
                 if ($colorId == 2) {
                     $wasGray = true; // This voter was gray at some point
                 } else if ($wasGray && $colorId != 2) {
-                    // If voter was gray and now changed to a different color, they are converted
                     $lastColor = $colorId;
-                    $lastSurvey = $surveyName; // Store the last survey where the color changed
+                    $lastSurvey = $surveyName; 
                     break; // Stop once they change color
                 }
             }
     
             // If the voter was ever gray and is now gray again, exclude them
             if ($wasGray && $lastColor != 2) {
-                list($householdNo, $lastName, $firstName) = explode('_', $voterKey);
+                list($householdNo, $lastName, $firstName, $middleName) = explode('_', $voterKey);
                 $voterData = Specialsurvey::find()
                     ->select(['id', 'survey_name', 'last_name', 'first_name', 'middle_name', 'household_no', 'barangay'])
-                    ->where(['household_no' => $householdNo, 'last_name' => $lastName, 'first_name' => $firstName])
+                    ->where(['household_no' => $householdNo, 'last_name' => $lastName, 'first_name' => $firstName, 'middle_name'=> $middleName])
                     ->andWhere(['survey_name' => $lastSurvey]) // Ensure it's the most recent survey
                     ->one();
     
