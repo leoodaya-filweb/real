@@ -10,6 +10,8 @@ use yii\helpers\ArrayHelper;
 $queryParams = App::queryParams();
 $selectedSurvey = $queryParams['survey_name'] ?? null;
 $selectedBarangay = $queryParams['barangay'] ?? null;
+$criteria=!$criteria?1:$criteria;
+
 
 
 // Get the list of all surveys
@@ -22,9 +24,11 @@ $surveys = Specialsurvey::find()
 $surveyIndex = array_search($selectedSurvey, $surveys);
 $previousSurvey = $surveyIndex > 0 ? $surveys[$surveyIndex - 1] : null;
 
-if (!$selectedSurvey) {
-    $selectedSurvey = $surveys[0];
-}
+// if (!$selectedSurvey) {
+//     $selectedSurvey = $surveys[0];
+// }
+$selectedSurveyCondition = $selectedSurvey ? ['survey_name' => $selectedSurvey] : [];
+
 // Get barangays based on the selected barangay or all barangays if none is selected
 $barangaysQuery = Specialsurvey::find()
     ->select('barangay')
@@ -41,29 +45,43 @@ $series = ['gray' => [], 'black' => [], 'green' => [], 'red' => []];
 $barangay_labels = [];
 
 foreach ($barangays as $barangay) {
-    $previousGrayVotersQuery = Specialsurvey::find()
-        ->select(['household_no'])
-        ->where(['survey_name' => $previousSurvey, 'criteria1_color_id' => 2, 'barangay' => $barangay])
-        ->asArray()
-        ->all();
+
+    $previousGrayVotersQuery = [];
+
+    if ($previousSurvey) {
+        $previousGrayVotersQuery = Specialsurvey::find()
+            ->select(['household_no'])
+            ->where(['survey_name' => $previousSurvey]) // Ensure it's from the previous survey
+            ->andWhere(['criteria'.$criteria.'_color_id' => 2, 'barangay' => $barangay])
+            ->asArray()
+            ->all();
+    }
     
-    $currentChangedVotersQuery = Specialsurvey::find()
-        ->select(['household_no', 'criteria1_color_id'])
-        ->where(['survey_name' => $selectedSurvey, 'barangay' => $barangay])
-        ->andWhere(['in', 'household_no', ArrayHelper::getColumn($previousGrayVotersQuery, 'household_no')])
-        ->andWhere(['<>', 'criteria1_color_id', 2])
-        ->asArray()
-        ->all();
+
+    $currentChangedVotersQuery = [];
+
+    if ($previousSurvey) {
+        $currentChangedVotersQuery = Specialsurvey::find()
+            ->select(['household_no', 'criteria'.$criteria.'_color_id'])
+            ->where(['survey_name' => $selectedSurvey, 'barangay' => $barangay])
+            ->andWhere(['in', 'household_no', ArrayHelper::getColumn($previousGrayVotersQuery, 'household_no')])
+            ->andWhere(['<>', 'criteria'.$criteria.'_color_id', 2])
+            ->asArray()
+            ->all();
+    }
+
     
     $currentGrayVotersQuery = Specialsurvey::find()
-        ->where(['survey_name' => $selectedSurvey, 'criteria1_color_id' => 2, 'barangay' => $barangay])
+        ->where($selectedSurveyCondition)
+        ->andWhere(['criteria'.$criteria.'_color_id' => 2, 'barangay' => $barangay])
         ->count();
+
     
     $barangay_labels[] = $barangay;
     $convertedCounts = ['black' => 0, 'green' => 0, 'red' => 0];
     
     foreach ($currentChangedVotersQuery as $matchedVoter) {
-        switch ($matchedVoter['criteria1_color_id']) {
+        switch ($matchedVoter['criteria'.$criteria.'_color_id']) {
             case 1:
                 $convertedCounts['black']++;
                 break;
@@ -91,7 +109,7 @@ $chart_data = [
 
 $chart_data_json = json_encode($chart_data);
 $barangay_labels_json = json_encode($barangay_labels);
-$chartTitle = "Gray Voter Data and Conversions ({$selectedSurvey})";
+$chartTitle = $selectedSurvey ? "Gray Voter Data and Conversions ({$selectedSurvey})" : "Gray Voter Data and Conversions (All Surveys)";
 
 $this->registerWidgetJs('brgygraph', <<<JS
     let data = {$chart_data_json};
@@ -123,7 +141,7 @@ JS);
 
     
         <div class="col-md-12">
-            <?= $this->render('voter_gray_purok_graph', ['queryParams' => $queryParams]) ?>
+            <?= $this->render('voter_gray_purok_graph', ['queryParams' => $queryParams, 'criteria' => $criteria]) ?>
         </div>
     </div>
 </div>

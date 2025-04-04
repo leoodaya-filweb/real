@@ -14,10 +14,9 @@ $surveys = Specialsurvey::find()
 $queryParams = App::queryParams();
 $selectedSurvey = $queryParams['survey_name'] ?? null;
 $selectedBarangay = $queryParams['barangay'] ?? null;
+$criteria=!$criteria?1:$criteria;
 
-if (!$selectedSurvey) {
-    $selectedSurvey = "Survey 1";
-}
+$selectedSurveyCondition = $selectedSurvey ? ['survey_name' => $selectedSurvey] : [];
 
 $surveyIndex = array_search($selectedSurvey, $surveys);
 $previousSurvey = $surveyIndex > 0 ? $surveys[$surveyIndex - 1] : null;
@@ -27,9 +26,9 @@ $previousGrayVotersQuery = [];
 if ($previousSurvey !== null) {
     $previousGrayVotersQuery = Specialsurvey::find()
         ->alias('t')
-        ->select(['last_name', 'first_name', 'middle_name', 'household_no', 'precinct_no', 'purok', 'criteria1_color_id'])
+        ->select(['last_name', 'first_name', 'middle_name', 'household_no', 'precinct_no', 'purok', 'criteria'.$criteria.'_color_id'])
         ->where(['survey_name' => $previousSurvey])
-        ->andWhere(['criteria1_color_id' => 2]) // Only gray voters
+        ->andWhere(['criteria'.$criteria.'_color_id' => 2]) // Only gray voters
         ->andFilterWhere(['barangay' => $selectedBarangay])
         ->asArray()
         ->all();
@@ -37,19 +36,19 @@ if ($previousSurvey !== null) {
 
 // Query for current changed voters, handling the case if no barangay is selected
 $currentChangedVotersQuery = Specialsurvey::find()
-    ->select(['last_name', 'first_name', 'middle_name', 'household_no', 'precinct_no', 'purok', 'criteria1_color_id', 'barangay'])
+    ->select(['last_name', 'first_name', 'middle_name', 'household_no', 'precinct_no', 'purok', 'criteria'.$criteria.'_color_id', 'barangay'])
     ->where(['survey_name' => $selectedSurvey])
     ->andWhere(['in', 'household_no', ArrayHelper::getColumn($previousGrayVotersQuery, 'household_no')])
-    ->andWhere(['<>', 'criteria1_color_id', 2]) // Changed from gray
+    ->andWhere(['<>', 'criteria'.$criteria.'_color_id', 2]) // Changed from gray
     ->andFilterWhere(['barangay' => $selectedBarangay ?: null])
     ->asArray()
     ->all();
 
 // Query for current gray voters, handling the case if no barangay is selected
 $currentGrayVotersQuery = Specialsurvey::find()
-    ->select(['purok', 'criteria1_color_id', 'barangay'])
-    ->where(['survey_name' => $selectedSurvey])
-    ->andWhere(['criteria1_color_id' => 2]) // Only gray voters
+    ->select(['purok', 'criteria'.$criteria.'_color_id', 'barangay'])
+    ->where($selectedSurveyCondition)
+    ->andWhere(['criteria'.$criteria.'_color_id' => 2]) // Only gray voters
     ->andFilterWhere(['barangay' => $selectedBarangay ?: null])
     ->asArray()
     ->all();
@@ -63,7 +62,7 @@ foreach ($currentChangedVotersQuery as $row) {
         $barangays[] = $row['barangay'];
     }
 
-    switch ($row['criteria1_color_id']) {
+    switch ($row['criteria'.$criteria.'_color_id']) {
         case 1: $series['black'][$row['barangay']][$row['purok']] = ($series['black'][$row['barangay']][$row['purok']] ?? 0) + 1; break;
         case 3: $series['green'][$row['barangay']][$row['purok']] = ($series['green'][$row['barangay']][$row['purok']] ?? 0) + 1; break;
         case 4: $series['red'][$row['barangay']][$row['purok']] = ($series['red'][$row['barangay']][$row['purok']] ?? 0) + 1; break;
@@ -80,6 +79,8 @@ foreach ($currentGrayVotersQuery as $row) {
 
 // Prepare chart data for each barangay
 $chart_data = [];
+$barangays = array_unique($barangays);
+sort($barangays);
 foreach ($barangays as $barangay) {
     // Merge the arrays for gray, black, green, and red voters for this barangay
     $purok_labels = array_keys(array_merge(

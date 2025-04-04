@@ -804,62 +804,69 @@ t.*,
     {
         error_reporting(E_ERROR);
         $survey_color = Specialsurvey::surveyColorReIndex();
-
         $queryParams = App::queryParams();
-        $criteria = 2; // Force only criteria 2 (Gray)
-
+        
+        $color_survey = 2; // Force only criteria 2 (Gray)
+        $criteria = $queryParams['criteria'] ?? 1; // Ensure criteria is properly assigned
+    
         $searchModel = new SpecialsurveySearch();
         $dataProvider = $searchModel->searchsummary(['SpecialsurveySearch' => $queryParams]);
-
-        if (isset($queryParams['bgygraph']) && $queryParams['bgygraph'] == 1) {
+    
+        if (!empty($queryParams['bgygraph']) && $queryParams['bgygraph'] == 1) {
             return $this->renderAjax('voter_gray_barangay_graph', [
                 'queryParams' => $queryParams,
-                'criteria' => $criteria
+                'criteria' => $criteria,
             ]);
         }
-
+    
         try {
-            $dataProvider->query->andFilterWhere(['criteria1_color_id' => 2]);
+            $criteriaColumn = 'criteria' . (int) $criteria . '_color_id';
+            
+            // Ensure the column exists before applying the filter
+            if (isset($dataProvider->query->modelClass::getTableSchema()->columns[$criteriaColumn])) {
+                $dataProvider->query->andFilterWhere([$criteriaColumn => $color_survey]);
+            }
         } catch (\Throwable $e) {
             Yii::error($e->getMessage(), 'application');
             return $this->asJson(['error' => $e->getMessage()]);
         }
-        
-
+    
         $mdata = $dataProvider->getModels();
         $barangay_data = ArrayHelper::index($mdata, 'barangay');
         $address = App::setting('address');
-
+    
         // Fetch Barangay Coordinates
         $coordinates = BarangayCoordinates::find()
             ->select(["country", "province", "municipality", "barangay", "coordinates", "color"])
             ->where(['municipality' => $address->municipalityName, 'province' => $address->provinceName])
             ->asArray()
             ->all();
-
+    
         $features = [];
         foreach ($coordinates as $row) {
-            $coords = json_decode($row['coordinates'], true);
-            $total_gray = $barangay_data[$row['barangay']]["criteria1_color_gray"] ?? 0;
-
+            $coords = json_decode($row['coordinates'], true) ?: []; // Ensure it is an array
+    
+            $colorKey = "criteria" . (int) $criteria . "_color_gray"; // Dynamic key
+            $total_gray = $barangay_data[$row['barangay']][$colorKey] ?? 0;
+    
             // Force the color to Gray
             $row['color'] = "#e4e6ef";
-
+    
             $household_colors = [
                 [
                     'label' => 'Gray',
-                    'total' => Html::number($total_gray),
+                    'total' => Yii::$app->formatter->asInteger($total_gray), // Format numbers properly
                     'color' => '#808080',
                 ]
             ];
-
+    
             $features[] = [
                 "type" => "Feature",
                 "properties" => [
                     "barangay" => $row['barangay'],
                     "color" => "#e4e6ef",
                     "percentage" => 100,
-                    "household" => Html::number($total_gray),
+                    "household" => Yii::$app->formatter->asInteger($total_gray),
                     "household_colors" => $household_colors,
                     "url_link" => Url::to(['specialsurvey/report-per-purok', 'barangay' => $row['barangay'], 'groupPurok' => true], true),
                 ],
@@ -869,26 +876,27 @@ t.*,
                 ]
             ];
         }
-
+    
+        // Prepare data output
         $data = [];
         foreach ($features as $feature) {
             $data["#808080"][] = $feature['properties']['barangay'];
         }
-
+    
         $output = ["match", ["get", "barangay"]];
         foreach ($data as $color => $barangays) {
             $output[] = $barangays;
             $output[] = $color;
         }
         $output[] = "#e4e6ef";
-
-        if (isset($queryParams['graph']) && isset($queryParams['grey']) && $queryParams['graph'] == 1 && $queryParams['grey'] == 1) {
+    
+        if (!empty($queryParams['graph']) && !empty($queryParams['grey']) && $queryParams['graph'] == 1 && $queryParams['grey'] == 1) {
             return $this->renderAjax('_grey_graph', [
                 'features' => $features,
                 'queryParams' => $queryParams,
             ]);
         }
-
+    
         return $this->asJson([
             "type" => "FeatureCollection",
             "features" => $features,
@@ -896,6 +904,7 @@ t.*,
             "queryParams" => $queryParams,
         ]);
     }
+    
 
 
     public function actionVoterDistribution($criteria = null)

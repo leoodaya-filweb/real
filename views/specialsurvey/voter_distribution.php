@@ -406,9 +406,9 @@ CSS, ['type' => "text/css"]);
                             method: 'get',
                             dataType: 'json',
                             success: (s) => {
-                                const layer = map.getLayer('barangay--coordinates');
+                                const layer = map.getLayer('gray-barangay--coordinates');
                                 if (layer) {
-                                    map.setPaintProperty('barangay--coordinates', 'fill-color', s.output);
+                                    map.setPaintProperty('gray-barangay--coordinates', 'fill-color', s.output);
                                 }
                                 
                              
