@@ -303,7 +303,7 @@ CSS, ['type' => "text/css"]);
            
                  
                  //Barangay label
-                   const datasourcebgryUrl = app.baseUrl + 'specialsurvey/population-coordinates1?brgy=1';
+                   const datasourcebgryUrl = app.baseUrl + 'specialsurvey/population-coordinates2?brgy=1';
                  
                     map.addSource('brgylabel', {
                       type: 'geojson',
@@ -337,67 +337,37 @@ CSS, ['type' => "text/css"]);
                  
                    //Voters
                  
-                   const datasourceUrl = app.baseUrl + 'specialsurvey/population-coordinates?barangay={$searchModel->barangay}&purok={$searchModel->purok}&color_survey={$searchModel->color_survey}&criteria={$searchModel->criteria}&survey_name={$searchModel->survey_name}&keywords={$searchModel->keywords}';
-              
-                    map.addSource('voters', {
-                      type: 'geojson',
-                      data: datasourceUrl
+                   const datasourceUrl = app.baseUrl + 'specialsurvey/population-coordinates2?barangay={$searchModel->barangay}&purok={$searchModel->purok}&color_survey={$searchModel->color_survey}&criteria={$searchModel->criteria}&survey_name={$searchModel->survey_name}&keywords={$searchModel->keywords}';
+                console.log(datasourceUrl);
+                
+                   map.addSource('voters', {
+                        type: 'geojson',
+                        data: datasourceUrl // This should come from your backend where only valid barangays are returned
                     });
 
-                  
-                  map.addLayer({
-                      id: 'population',
-                      type: 'circle',
-                      paint: {
-                        'circle-radius': {
-                        'base': 1.75,
-                        'stops':[[8, 1],[11, 3], [16, 40]]
+                    map.addLayer({
+                        id: 'population',
+                        type: 'circle',
+                        paint: {
+                            'circle-radius': {
+                                'base': 1.75,
+                                'stops': [[8, 1], [11, 3], [16, 40]]
+                            },
+                            'circle-color': [
+                                'match',
+                                ['get', 'criteria1_color_id'],
+                                1, '#181c32',
+                                2, '#e4e6ef',
+                                3, '#1bc5bd',
+                                4, '#f64e60',
+                                /* other */ '#F64E60'
+                            ]
                         },
-                       //'circle-color': '#1CC5BD'
-                        'circle-color': [
-                        'match',
-                        ['get', 'criteria1_color_id'],
-                        1,
-                        '#181c32',
-                        2,
-                        '#e4e6ef',
-                        3,
-                        '#1bc5bd',
-                        4,
-                        '#f64e60',
-                        /* other */ '#F64E60'
-                    ]
-                     },
-                      source: 'voters'
-                      }, 'aeroway-polygon');
-                      
-                    //    // Handle filter changes
-                    //     $('#checkbox-colors input:checkbox').change(function() {
-                    //         const color_survey = $("#checkbox-colors input:checkbox:checked").map(function() {
-                    //             return $(this).val();
-                    //         }).get();
-                    //         updateMapWithDominantBarangay(color_survey);
-                    //     });
+                        source: 'voters'
+                    }, 'aeroway-polygon');
 
-                    //     // Function to update the map with dominant barangay based on selected color
-                    //     function updateMapWithDominantBarangay(color_survey) {
-                    //         const barangayUrl = app.baseUrl + 'specialsurvey/barangay-coordinates?color_survey=' + color_survey.join(',');
-                            
-                    //         $.ajax({
-                    //             url: barangayUrl,
-                    //             method: 'GET',
-                    //             dataType: 'json',
-                    //             success: (data) => {
-                    //                 const dominantBarangay = data.dominantBarangay;
-                    //                 map.getSource('barangay-coordinates').setData(dominantBarangay);
-                    //                 map.setPaintProperty('barangay-coordinates', 'fill-color', dominantBarangay.color);
-                    //             },
-                    //             error: (err) => {
-                    //                 console.log('Error fetching dominant barangay data:', err);
-                    //             }
-                    //         });
-                    //     }
                       
+
                       
                        let populationClick= 0;
                        map.on('click', 'population', (e) => {
@@ -561,7 +531,7 @@ CSS, ['type' => "text/css"]);
                         //console.log(color_survey);
                         
                         
-                         const datasourceUrl2 = app.baseUrl + 'specialsurvey/population-coordinates?barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
+                         const datasourceUrl2 = app.baseUrl + 'specialsurvey/population-coordinates2?barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
                          map.getSource('voters').setData(datasourceUrl2);
 
                          changePaint(dataUrl + '?barangay='+barangay+'&criteria=' + criteria + '&survey_name=' + (survey_name || '')+ '&date_range=' + date_survey+'&color_survey='+color_survey+'&purok='+purok);
@@ -632,7 +602,7 @@ CSS, ['type' => "text/css"]);
 
                     
                             
-                             const datasourceUrl2 = app.baseUrl + 'specialsurvey/population-coordinates?barangay='+barangay+'&criteria='+criteria+'&survey_name=' + (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
+                             const datasourceUrl2 = app.baseUrl + 'specialsurvey/population-coordinates2?barangay='+barangay+'&criteria='+criteria+'&survey_name=' + (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
                              map.getSource('voters').setData(datasourceUrl2);
                               
                               

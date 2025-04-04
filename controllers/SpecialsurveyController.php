@@ -1404,19 +1404,155 @@ t.*,
         ]);
     }
 
+
+    public function actionPopulationCoordinates2($criteria = '', $brgy = '', $hs = '')
+    {
+        $queryParams = App::queryParams();
+        $criteria = $criteria ?: 1;
+        $color_survey = $queryParams['color_survey'];
+        if ($color_survey) {
+            $color_survey = explode(',', $color_survey);
+            
+        } else {
+            $color_survey = array_keys(App::setting('surveyColor')->survey_color);
+        }
+        
+    
+        // If brgy=1, just return all barangays for map label
+        if ($brgy == 1) {
+            $mdata = Barangay::find()->all();
+            foreach ($mdata as $row) {
+                $features[] = [
+                    "id" => $row['id'],
+                    "type" => "Feature",
+                    "properties" => $row,
+                    "geometry" => [
+                        "type" => "Point",
+                        "coordinates" => [$row['longitude'], $row['latitude']]
+                    ]
+                ];
+            }
+    
+            return $this->asJsonNumeric([
+                "type" => "FeatureCollection",
+                "features" => $features,
+            ]);
+        }
+    
+        // ================== Determine Barangays with Matching Dominant Color ==================
+        $barangays = Barangay::find()->all();
+        // After getting the color counts
+        $validBarangays = [];
+        foreach ($barangays as $barangay) {
+            $colorCounts = Specialsurvey::find()
+                ->select(['criteria' . $criteria . '_color_id', 'COUNT(*) as total'])
+                ->where(['barangay' => $barangay->name, 'survey_name' => $queryParams['survey_name']])
+                ->groupBy('criteria' . $criteria . '_color_id')
+                ->indexBy('criteria' . $criteria . '_color_id')
+                ->asArray()
+                ->all();
+
+           
+            // Find the dominant color
+            $dominantColor = null;
+            $maxCount = 0;
+            foreach ($colorCounts as $color => $data) {
+                if ($data['total'] > $maxCount) {
+                    $dominantColor = $color;
+                    $maxCount = $data['total'];
+                }
+            }
+
+            $color_survey = $queryParams['color_survey'];
+            if ($color_survey) {
+                $color_survey = explode(',', $color_survey);
+                
+            } else {
+                $color_survey = array_keys(App::setting('surveyColor')->survey_color);
+            }
+            
+
+            // Check if dominant color is in the requested color_survey list
+            if ($dominantColor && in_array($dominantColor, $color_survey)) {
+
+                if(	$barangay->name=="Poblacion 61 (Barangay 2)"){
+                    $validBarangays[] ='Poblacion 61';
+                }elseif($barangay->name=="Poblacion I (Barangay 1)"){
+                    $validBarangays[] ='Poblacion 1';
+                }
+                else{
+                    $validBarangays[] = $barangay->name; // Add to valid barangays
+
+                }
+
+            }
+        }
+
+        // Ensure there's valid data before proceeding
+        if (empty($validBarangays)) {
+            return $this->asJsonNumeric([
+                "type" => "FeatureCollection",
+                "features" => [],
+               
+            ]);
+        }
+    
+        // Proceed with the data fetching if valid barangays exist
+        $searchModel = new SpecialsurveySearch();
+        $dataProvider = $searchModel->searchvoters(['SpecialsurveySearch' => $queryParams]);
+        $dataProvider->query->andWhere(['t.barangay' => $validBarangays]);
+    
+        $dataProvider->query->select([
+            't.id', 't.first_name', 't.middle_name', 't.last_name', 't.household_no',
+            '(t.criteria' . $criteria . '_color_id) as criteria1_color_id',
+            'count(t.id) as total_voters', 'hs.longitude', 'hs.latitude', 't.barangay'
+        ]);
+    
+        $dataProvider->query->andFilterWhere(['t.criteria'.$criteria.'_color_id' => $color_survey]);
+
+        // $dataProvider->query->andWhere(['t.barangay' => $validBarangays]);
+    
+        $mdata = $dataProvider->query->all();
+        $survey_color = App::setting('surveyColor')->survey_color;
+        $survey_color = App::mapParams($survey_color, 'id', 'label');
+    
+        $features = [];
+        foreach ($mdata as $row) {
+            $row['color_label'] = $survey_color[$row['criteria1_color_id']];
+            
+            $features[] = [
+                "id" => $row['id'],
+                "type" => "Feature",
+                "properties" => $row,
+                "geometry" => [
+                    "type" => "Point",
+                    "coordinates" => [$row['longitude'], $row['latitude']]
+                ]
+            ];
+        }
+    
+        return $this->asJsonNumeric([
+            "type" => "FeatureCollection",
+            "features" => $features,
+        ]);
+    }
+    
+    
+    
+    
     
         
 
-    public function actionSurveys($survey = null)
-    {
-        $surveys = Specialsurvey::find()
-            ->select(['id', 'survey_name', 'last_name', 'first_name', 'middle_name', 'criteria1_color_id'])
-            ->where(['survey_name' => $survey, 'barangay' => 'Bagong Silang'])
-            ->orderBy(['criteria1_color_id'=> SORT_ASC])
-            ->all();
+    // public function actionSurveys($survey = null)
+    // {
+    //     $surveys = Specialsurvey::find()
+    //         ->select(['id', 'survey_name', 'last_name', 'first_name', 'middle_name', 'criteria1_color_id'])
+    //         ->where(['survey_name' => $survey, 'barangay' => 'Bagong Silang'])
+    //         ->orderBy(['criteria1_color_id'=> SORT_ASC])
+    //         ->all();
 
-        return $this->asJson(['Count' => count($surveys)    ,'surveys' => $surveys ]);
-    }
+    //     return $this->asJson(['Count' => count($surveys)    ,'surveys' => $surveys ]);
+    // }
     
     // public function actionConvertedVoters($criteria = 2, $color_survey = 1)
     // {
