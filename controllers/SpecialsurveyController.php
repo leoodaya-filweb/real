@@ -971,7 +971,7 @@ t.*,
         // Prepare data for color charts
         $data = [];
         $grayVoterData = [];
-        
+    
         // Collect data for each color (Black, Gray, Green, Red)
         foreach ($colorMapping as $criteriaId => $color) {
             $counts = Specialsurvey::find()
@@ -998,7 +998,7 @@ t.*,
                 3 => 'Green voters',
                 4 => 'Red voters'
             ];
-            
+    
             // Add color data to display in chart
             $data[] = [
                 'id' => $criteriaId,
@@ -1057,11 +1057,40 @@ t.*,
                 if ($voterData) {
                     $convertedVoters[] = [
                         'voter_id' => $voterData->id,
+                        'survey_name' => $voterData->survey_name,
                     ];
                 }
             }
         }
     
+        // Calculate conversion per survey
+        $conversionPerSurvey = [];
+        foreach ($convertedVoters as $convertedVoter) {
+            $surveyName = $convertedVoter['survey_name'];
+            if (!isset($conversionPerSurvey[$surveyName])) {
+                $conversionPerSurvey[$surveyName] = 0;
+            }
+            $conversionPerSurvey[$surveyName]++;
+        }
+    
+        // Calculate the total number of voters for the given color_survey
+        $totalVoters = Specialsurvey::find()
+            ->select(['COUNT(*) as total_voters'])
+            ->where(['criteria' . $criteria . '_color_id' => $color_survey])
+            ->scalar();
+    
+        // Calculate the percentage of converted voters
+        $convertedCount = count($convertedVoters);
+        $conversionPercentage = ($totalVoters > 0) ? round(($convertedCount / $totalVoters) * 100, 2) : 0;
+
+        // Calculate the total number of records for each survey
+        $surveyRecordCounts = [];
+        foreach ($surveyLabels as $surveyName) {
+            $surveyRecordCounts[$surveyName] = Specialsurvey::find()
+                ->where(['survey_name' => $surveyName])
+                ->count();
+        }
+
         // Filter the dataProvider based on converted voters
         if (empty($convertedVoters)) {
             $dataProvider->query->andWhere(['t.id' => null]);
@@ -1070,10 +1099,19 @@ t.*,
             $dataProvider->query->andWhere(['t.id' => $voterIds]);
         }
     
+        // Pass the conversion data per survey to the view
         if (Yii::$app->request->isAjax) {
             return $this->renderAjax('index_list', [
                 'searchModel' => $searchModel,
                 'dataProvider' => $dataProvider,
+                'convertedCount' => $convertedCount,
+                'conversionPercentage' => $conversionPercentage,
+                'conversionPerSurvey' => $conversionPerSurvey, // Pass the conversion data for each survey
+                'totalVoters' => $totalVoters, // Pass the total number of voters for percentage calculation
+                'surveyLabels' => $surveyLabels,
+                'surveyRecordCounts' => $surveyRecordCounts, // Pass survey record counts to the view
+
+                'cra' => true,
             ]);
         }
     
@@ -1084,14 +1122,15 @@ t.*,
             'periods' => json_encode($periods),
             'colorData' => json_encode($data),  // Ensure data for chart is passed
             'grayData' => json_encode($grayVoterData),
+            'convertedCount' => $convertedCount,
+            'conversionPercentage' => $conversionPercentage,
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+            'conversionPerSurvey' => $conversionPerSurvey, // Pass the conversion data for each survey
+            'surveyRecordCounts' => $surveyRecordCounts, // Pass survey record counts to the view
+            'totalVoters' => $totalVoters, // Pass the total number of voters for percentage calculation
         ]);
     }
-    
-    
-    
-    
     
     
     
@@ -1527,26 +1566,41 @@ t.*,
     }
     
     
+
+    public function actionVoterSegmentationByAgeAndGenders() {
+        $searchModel = new SpecialsurveySearch();
+        $dataProvider = $searchModel->searchsummary(['SpecialsurveySearch' => App::queryParams()]);
+    
+        $ageSegmentationData = [
+            ['ageRange' => '60+', 'maleCount' => 60, 'femaleCount' => 75],
+            ['ageRange' => '55-59', 'maleCount' => 90, 'femaleCount' => 95],
+            ['ageRange' => '45-54', 'maleCount' => 180, 'femaleCount' => 170],
+            ['ageRange' => '35-44', 'maleCount' => 200, 'femaleCount' => 180],
+            ['ageRange' => '25-34', 'maleCount' => 150, 'femaleCount' => 160],
+            ['ageRange' => '18-24', 'maleCount' => 100, 'femaleCount' => 120],
+        ];
+    
+        return $this->render('voter_segmentation_by_age_gender', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+            'ageSegmentationData' => $ageSegmentationData
+        ]);
+    }
+    
+
+    public function actionVoterSegmentationBySector(){
+
+    }
+
+    public function actionVoterSocialAssistanceBeneficiaries(){
+
+    }
     
     
     
         
 
-    // public function actionSurveys($survey = null)
-    // {
-    //     $surveys = Specialsurvey::find()
-    //         ->select(['id', 'survey_name', 'last_name', 'first_name', 'middle_name', 'criteria1_color_id'])
-    //         ->where(['survey_name' => $survey, 'barangay' => 'Bagong Silang'])
-    //         ->orderBy(['criteria1_color_id'=> SORT_ASC])
-    //         ->all();
 
-    //     return $this->asJson(['Count' => count($surveys)    ,'surveys' => $surveys ]);
-    // }
-    
-    // public function actionConvertedVoters($criteria = 2, $color_survey = 1)
-    // {
-       
-    // }
     
     
     
@@ -1558,26 +1612,12 @@ t.*,
     
 
 
-    // public function actionSwingVoterStats()
-    // {
-    //     $query = (new \yii\db\Query())
-    //         ->select(['barangay', 'COUNT(*) as total'])
-    //         ->from('tbl_specialsurvey')
-    //         ->where(['criteria1_color_id' => 2]) // Assuming 2 represents "gray" (undecided voters)
-    //         ->groupBy('barangay')
-    //         ->orderBy(['total' => SORT_DESC])
-    //         ->all();
-
-    //     return $this->asJson($query);
-    // }
 
 
     // ////////////////////////////////////////////////////
     
 
-    
-    
-   
+
     
     public function actionVoterInsights($print=null)
     {

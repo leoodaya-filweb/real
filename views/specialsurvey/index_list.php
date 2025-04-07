@@ -51,6 +51,41 @@ $this->params['headerButtons'] = implode(' ', [
 ?>
 
 
+<?php if ($cra === true): ?>
+    <div class="table-responsive mb-5 mt-3">
+        <table class="table table-hover table-striped-columns table-striped  rounded-3">
+            <thead >
+                <tr class="text-center text-primary ">
+                    <th scope="col">Survey Name</th>
+                    <th scope="col">Total Records</th> <!-- New column -->
+                    <th scope="col">Converted Voters</th>
+                    <th scope="col">Conversion Percentage</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($surveyLabels as $index => $surveyName): ?>
+                    <tr class="text-center">
+                        <td><?= Html::encode($surveyName) ?></td>
+                        <td ><?= Html::encode($surveyRecordCounts[$surveyName] ?? 0) ?></td> <!-- Display total records -->
+                        <td><?= Html::encode($conversionPerSurvey[$surveyName] ?? 0) ?></td>
+                        <td>
+                            <?php 
+                                $surveyTotal = isset($conversionPerSurvey[$surveyName]) ? $conversionPerSurvey[$surveyName] : 0;
+                                $surveyPercentage = $totalVoters > 0 ? round(($surveyTotal / $surveyRecordCounts[$surveyName]) * 100, 2) : 0;
+                            ?>
+                            <?= Html::encode($surveyPercentage) ?>%
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+
+    <h2 class="mb-5 ">List of Converted Voters</h2>
+<?php endif; ?>
+
+
+
 
 
 <?= Html::beginForm(['bulk-action'], 'post'); ?>

@@ -338,7 +338,7 @@ CSS, ['type' => "text/css"]);
                    //Voters
                  
                    const datasourceUrl = app.baseUrl + 'specialsurvey/population-coordinates2?barangay={$searchModel->barangay}&purok={$searchModel->purok}&color_survey={$searchModel->color_survey}&criteria={$searchModel->criteria}&survey_name={$searchModel->survey_name}&keywords={$searchModel->keywords}';
-                console.log(datasourceUrl);
+            
                 
                    map.addSource('voters', {
                         type: 'geojson',

@@ -37,7 +37,7 @@ $this->params['createTitle'] = 'Create Survey';
 
 $this->registerCss(<<< CSS
     #line-chart{
-        max-width: 100%; height: auto; padding: 50px;
+        max-width: 100%; height: auto; padding: 10px;
     }
    
     
@@ -92,7 +92,7 @@ $this->registerJs(<<<JS
             xaxis: { 
                 title: { 
                     text: 'Survey Period',
-                    style: { fontSize: '15px', fontWeight: '500', padding: { top: 20, bottom: 10 } }
+                    style: { fontSize: '15px', fontWeight: '500', }
                 },
                 categories: formattedLabels,  // Use the formatted labels array
                 labels: {
@@ -109,10 +109,7 @@ $this->registerJs(<<<JS
                 axisBorder: { show: true, color: '#ddd' },
                 tickPlacement: 'on',
                 position: 'bottom',
-                padding: {
-                    left: 10,
-                    right: 10
-                }
+                
             },
             yaxis: {
                 title: { 
@@ -190,7 +187,10 @@ $this->registerJs(<<<JS
             }
         });
 
+        
     }
+
+    
 
     
 
@@ -212,7 +212,7 @@ JS);
 <section class="mt-5 new-map" style="position: relative;">
     <div class="d-flex gap-5 align-items-center">
         <div>
-            <p class="lead font-weight-bold mb-0">Filter by Color: </p>
+            <p class="lead font-weight-bold mb-0">Filter  Color: </p>
         </div>
         <div class="ml-5">
             <select class="form-control" id="color-select">
@@ -250,15 +250,9 @@ JS);
 <div class="specialsurvey-index-page" >
 
 
-   
-    <div class="mt-5"></div>
  
-     
-    
 
  
- 
-    <h2 class="mb-5">List of Converted Voters</h2>
     <div id="voter-list">
     <?= Html::beginForm(['bulk-action'], 'post'); ?>
         <?= BulkAction::widget(['searchModel' => $searchModel]) ?>
