@@ -50,7 +50,7 @@ foreach ($barangays as $barangay) {
 
     if ($previousSurvey) {
         $previousGrayVotersQuery = Specialsurvey::find()
-            ->select(['household_no'])
+            ->select(['last_name', 'first_name', 'middle_name', 'household_no', 'precinct_no', 'barangay',  'criteria'.$criteria.'_color_id'])
             ->where(['survey_name' => $previousSurvey]) // Ensure it's from the previous survey
             ->andWhere(['criteria'.$criteria.'_color_id' => 2, 'barangay' => $barangay])
             ->asArray()
@@ -62,10 +62,15 @@ foreach ($barangays as $barangay) {
 
     if ($previousSurvey) {
         $currentChangedVotersQuery = Specialsurvey::find()
-            ->select(['household_no', 'criteria'.$criteria.'_color_id'])
+            ->select(['last_name', 'first_name', 'middle_name', 'household_no', 'precinct_no', 'barangay',  'criteria'.$criteria.'_color_id'])
             ->where(['survey_name' => $selectedSurvey, 'barangay' => $barangay])
             ->andWhere(['in', 'household_no', ArrayHelper::getColumn($previousGrayVotersQuery, 'household_no')])
+            ->andWhere(['in', 'last_name', ArrayHelper::getColumn($previousGrayVotersQuery, 'last_name')])
+            ->andWhere(['in', 'first_name', ArrayHelper::getColumn($previousGrayVotersQuery, 'first_name')])
+            ->andWhere(['in', 'middle_name', ArrayHelper::getColumn($previousGrayVotersQuery, 'middle_name')])
+            ->andWhere(['in', 'precinct_no', ArrayHelper::getColumn($previousGrayVotersQuery, 'precinct_no')])
             ->andWhere(['<>', 'criteria'.$criteria.'_color_id', 2])
+            ->andWhere(['barangay' => $barangay])
             ->asArray()
             ->all();
     }
