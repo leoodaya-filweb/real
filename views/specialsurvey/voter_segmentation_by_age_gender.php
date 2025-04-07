@@ -18,7 +18,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/apexcharts@3.32.1/dist/apexc
 ]);
 
 // Extract the unique age range values from the provided data (ageSegmentationData)
-$ageRanges = array_map(fn($item) => $item['ageRange'], $ageSegmentationData);
+$ageRanges = array_map(fn($item) => $item['age_range'], $ageSegmentationData);
 
 // Initialize data arrays for male and female counts
 $maleData = [];
@@ -27,9 +27,9 @@ $femaleData = [];
 // Process data for each age range in the original ageSegmentationData
 foreach ($ageSegmentationData as $item) {
     // Negative values for male counts to make them appear on the left
-    $maleData[] = -(int)($item['maleCount'] ?? 0); // Cast to int to avoid any unexpected string behavior
+    $maleData[] = -(int)($item['male_count'] ?? 0); // Cast to int to avoid any unexpected string behavior
     // Positive values for female counts to make them appear on the right
-    $femaleData[] = (int)($item['femaleCount'] ?? 0); // Cast to int to ensure proper behavior
+    $femaleData[] = (int)($item['female_count'] ?? 0); // Cast to int to ensure proper behavior
 }
 
 // Convert to JSON for JavaScript
@@ -39,165 +39,264 @@ $encodedFemaleData = json_encode($femaleData);
 
 $this->registerJs(<<<JS
 
-function renderChart() {
-    const ageLabels = $encodedAgeLabels;
-    const maleCounts = $encodedMaleData;
-    const femaleCounts = $encodedFemaleData;
+    function renderChart() {
+        const ageLabels = $encodedAgeLabels;
+        const maleCounts = $encodedMaleData;
+        const femaleCounts = $encodedFemaleData;
 
-    var options = {
-        series: [
-            {
-                name: 'Male',
-                data: maleCounts // Keep male data as positive values
-            },
-            {
-                name: 'Female',
-                data: femaleCounts // Keep female data as positive values
-            }
-        ],
-        chart: {
-            type: 'bar',
-            height: 440,
-            stacked: true, // Stacked bars so both bars (Male & Female) appear together
-            toolbar: {
-                show: false // Hide toolbar for cleaner UI
-            },
-            animations: {
-                enabled: true,
-                easing: 'easeinout',
-                speed: 1000,
-                animateGradually: {
+        var options = {
+            series: [
+                {
+                    name: 'Male',
+                    data: maleCounts // Male data (blue)
+                },
+                {
+                    name: 'Female',
+                    data: femaleCounts.map(value => Math.abs(value)) // Female data (red)
+                }
+            ],
+            chart: {
+                type: 'bar',
+                height: 440,
+                stacked: true, // Keep bars stacked
+                toolbar: {
+                    show: false // Hide toolbar
+                },
+                animations: {
                     enabled: true,
-                    delay: 200
-                }
-            }
-        },
-        colors: ['#008FFB', '#FF4560'], // Use clean and modern colors (Blue for Male, Red for Female)
-        plotOptions: {
-            bar: {
-                horizontal: true, // Horizontal bars for better space utilization
-                barHeight: '80%', // Adjust bar height for a sleek look
-                borderRadius: 10, // Rounded corners for a modern look
-                borderRadiusWhenStacked: 'all', // Apply rounding to all stacked bars
-                distributed: true, // More even bar distribution
-            },
-        },
-        dataLabels: {
-            enabled: false // Disable data labels for a cleaner look
-        },
-        stroke: {
-            width: 1,
-            colors: ["#fff"] // White border for better contrast
-        },
-        grid: {
-            xaxis: {
-                lines: {
-                    show: false // Hide vertical grid lines for a cleaner design
-                }
-            },
-            yaxis: {
-                lines: {
-                    show: false // Hide horizontal grid lines for a cleaner design
-                }
-            }
-        },
-        tooltip: {
-            shared: false, // Tooltip for each individual bar
-            x: {
-                formatter: function (val) {
-                    return val; // Tooltip for X-axis category
-                }
-            },
-            y: {
-                formatter: function (val) {
-                    return Math.abs(val) + " voters"; // Display absolute value as "voters"
-                }
-            },
-            style: {
-                fontSize: '14px',
-                fontFamily: 'Arial, Helvetica, sans-serif',
-                fontWeight: 'bold',
-            }
-        },
-        
-        xaxis: {
-            categories: ageLabels, // Dynamically set labels based on age ranges
-            title: {
-                text: 'Number of Voters',
-                style: {
-                    color: '#333',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    fontFamily: 'Arial, Helvetica, sans-serif'
-                }
-            },
-            labels: {
-                formatter: function (val) {
-                    return Math.abs(Math.round(val)); // Show rounded values
+                    easing: 'easeinout',
+                    speed: 1000,
+                    animateGradually: {
+                        enabled: true,
+                        delay: 200
+                    }
                 },
-                style: {
-                    fontSize: '12px',
-                    fontFamily: 'Arial, Helvetica, sans-serif',
-                    color: '#333'
-                }
             },
-            offsetY: 10, // Adding space between X-axis title and X-axis labels
-        },
-        yaxis: {
-            title: {
-                text: 'Age Group',
-                style: {
-                    color: '#333',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    fontFamily: 'Arial, Helvetica, sans-serif'
+            colors: ['#008FFB', '#FF4560'], // Blue for Male, Red for Female
+            plotOptions: {
+                bar: {
+                    borderRadius: 12, // Rounded corners for the bars
+                    horizontal: true, // Horizontal bars
+                    barHeight: '80%', // Height adjustment for a sleek look
                 },
-                offsetX: 10, // Add horizontal padding
-                offsetY: 10  // Add vertical padding
             },
-            labels: {
-                style: {
-                    fontSize: '12px',
-                    fontFamily: 'Arial, Helvetica, sans-serif',
-                    color: '#333'
-                }
+            dataLabels: {
+                enabled: false // Disable data labels for a cleaner design
             },
-            offsetX: 10, // Adding space between Y-axis title and Y-axis labels
-        },
-        legend: {
-            position: 'top', // Move the legend to the top
-            horizontalAlign: 'center', // Align the legend horizontally at the top
-            fontSize: '20px',
-        },
-        responsive: [{
-            breakpoint: 768,
-            options: {
-                chart: {
-                    height: 400
-                },
+            stroke: {
+                width: 1,
+                colors: ["#fff"] // White border for contrast
+            },
+            grid: {
                 xaxis: {
-                    labels: {
-                        fontSize: '10px'
+                    lines: {
+                        show: true, // Show grid lines for clarity
+                        borderColor: '#e0e0e0' // Light gray border color
                     }
                 },
                 yaxis: {
-                    labels: {
-                        fontSize: '10px'
+                    lines: {
+                        show: false // Hide horizontal grid lines for a clean look
+                    }
+                }
+            },
+            tooltip: {
+                shared: false, // Tooltip for each bar individually
+                x: {
+                    formatter: function (val) {
+                        return val; // Display age range
                     }
                 },
-                legend: {
-                    position: 'bottom', // Move the legend to the bottom on smaller screens
+                y: {
+                    formatter: function (val) {
+                        return Math.abs(val) + " voters"; // Display absolute value as "voters"
+                    }
+                },
+                style: {
+                    fontSize: '14px',
+                    fontFamily: 'Roboto, Helvetica, sans-serif', // Modern font family
+                    fontWeight: 'bold',
+                    background: '#fff', // White background for tooltips
+                    borderRadius: '8px', // Rounded corners for tooltips
+                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)' // Light shadow for tooltips
                 }
+            },
+            title: {
+                text: 'Voter Demographics by Gender',
+                align: 'center',
+                style: {
+                fontSize: '24px', // Increased font size for a bigger title
+                fontWeight: 'bold',
+                fontFamily: 'Roboto, Helvetica, sans-serif',
+                color: '#333', // Dark color for title text
+                letterSpacing: '1px', // Increased spacing between letters for better readability
+                },
+                offsetY: -10, // Added vertical offset
+                offsetX: 10  // Added horizontal offset
+            },
+            xaxis: {
+                categories: ageLabels, // Dynamically set labels based on age ranges
+                title: {
+                    text: 'Number of Voters',
+                    style: {
+                        color: '#333',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        fontFamily: 'Roboto, Helvetica, sans-serif'
+                    }
+                },
+                labels: {
+                    formatter: function (val) {
+                        return Math.abs(Math.round(val)); // Show rounded values
+                    },
+                    style: {
+                        fontSize: '12px',
+                        fontFamily: 'Roboto, Helvetica, sans-serif',
+                        color: '#333'
+                    }
+                },
+                offsetY: 10, // Add space between X-axis title and X-axis labels
+                axisBorder: {
+                    show: true,
+                    color: '#333',
+                    height: 2,
+                },
+            },
+            yaxis: {
+                title: {
+                    text: 'Age Group',
+                    style: {
+                        color: '#333',
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        fontFamily: 'Roboto, Helvetica, sans-serif'
+                    },
+                    offsetX: 10, // Add horizontal padding
+                    offsetY: 10  // Add vertical padding
+                },
+                labels: {
+                    style: {
+                        fontSize: '12px',
+                        fontFamily: 'Roboto, Helvetica, sans-serif',
+                        color: '#333'
+                    }
+                },
+                offsetX: 10, // Adding space between Y-axis title and Y-axis labels
+            },
+            legend: {
+                position: 'top', // Move the legend to the top
+                horizontalAlign: 'center', // Align the legend horizontally at the top
+                fontSize: '20px',
+                fontFamily: 'Roboto, Helvetica, sans-serif',
+                labels: {
+                useSeriesColors: true
+                },
+                offsetY: -20, // Add vertical padding
+                offsetX: 10  // Add horizontal padding
+            },
+            responsive: [{
+                breakpoint: 768,
+                options: {
+                    chart: {
+                        height: 400
+                    },
+                    xaxis: {
+                        labels: {
+                            fontSize: '10px'
+                        }
+                    },
+                    yaxis: {
+                        labels: {
+                            fontSize: '10px'
+                        }
+                    },
+                    legend: {
+                        position: 'bottom', // Move the legend to the bottom on smaller screens
+                    }
+                }
+            }]
+        };
+
+        var chart = new ApexCharts(document.querySelector("#ageSegmentationChart"), options);
+        chart.render();
+    }
+
+
+
+
+    function renderDoughnutChart() {
+        const maleCount = $encodedMaleData.reduce((acc, val) => acc + Math.abs(val), 0); // Summing absolute male data
+        const femaleCount = $encodedFemaleData.reduce((acc, val) => acc + val, 0); // Summing female data
+
+        const totalCount = maleCount + femaleCount; // Total count of voters
+
+        const malePercentage = (maleCount / totalCount) * 100; // Calculating male percentage
+        const femalePercentage = (femaleCount / totalCount) * 100; // Calculating female percentage
+        console.log(malePercentage);
+        console.log(femalePercentage);
+        
+        var options = {
+            chart: {
+                type: 'donut',
+                height: 350
+            },
+            series: [malePercentage, femalePercentage],
+            labels: ['Male', 'Female'],
+            colors: ['#008FFB', '#FF4560'], // Blue for Male, Red for Female
+            plotOptions: {
+                pie: {
+                    donut: {
+                        size: '60%', // Size of the doughnut hole
+                    }
+                }
+            },
+            dataLabels: {
+                enabled: true,
+                formatter: function (val) {
+                    return val.toFixed(2) + "%"; // Show percentage with 2 decimals
+                },
+                style: {
+                    fontSize: '16px',
+                    fontFamily: 'Arial, Helvetica, sans-serif',
+                    fontWeight: 'bold',
+                    colors: ['#fff']
+                }
+            },
+            tooltip: {
+                shared: true,
+                y: {
+                    formatter: function (val) {
+                        return val.toFixed(2) + "%"; // Tooltip with percentage
+                    }
+                }
+            },
+            title: {
+                text: 'Voter Gender Distribution',
+                align: 'center',
+                style: {
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    color: '#333',
+                    fontFamily: 'Arial, Helvetica, sans-serif'
+                },
+                offsetY: -5 
+            },
+            legend: {
+                position: 'bottom', // Legend position
+                horizontalAlign: 'center', // Center the legend items
+                floating: false
             }
-        }]
-    };
+        };
 
-    var chart = new ApexCharts(document.querySelector("#ageSegmentationChart"), options);
-    chart.render();
-}
-
+        var chart = new ApexCharts(document.querySelector("#genderDoughnutChart"), options);
+        chart.render();
+    }
 
 
+
+
+
+    renderDoughnutChart();
     renderChart();
 JS);
 ?>
@@ -230,21 +329,31 @@ JS);
             </select>
         </div>
         <div class="ml-5">
-            <select class="form-control" id="select-criteria">
-                <?php foreach ([1, 2, 3, 4, 5] as $n): ?>
-                    <?= Html::tag('option', "Criteria {$n}", [
-                        'value' => $n,
-                        'selected' => App::get("criteria{$n}_color_id") ? true : false
-                    ]) ?>
+             <select class="form-control" id="color-select"</select>>
+             <option value="" selected>All</option>
+                <?php foreach ($colorData as $id => $name): ?>
+                    
+                    <?php  // Exclude Gray Voters ?>
+                        <option value="<?= $id ?>" 
+                            data-content='<span class="badge" style="background-color: <?= strtolower($name) ?>; margin-right: 5px;"></span><?= $name ?>'>
+                            <?= $name ?>
+                        </option>
+                   
                 <?php endforeach; ?>
             </select>
+
+          
+
         </div>
     </div>
 </section>
 
 
 <div class="mt-10">
-<h2>Gender Segmentation</h2>
+
+</div>
+<div class="mt-5">
+
 </div>
 
 <!-- Chart Section -->
@@ -252,7 +361,6 @@ JS);
 
 
 
-<h2>Gender Segmentation</h2>
-<div id="genderSegmentationChart" style="height: 500px;"></div>
+    <div id="genderDoughnutChart" style="height: 500px;"></div>
 
 

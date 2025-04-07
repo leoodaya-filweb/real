@@ -173,10 +173,11 @@ $params = [
     ],
 
     'survey_color' => [
-        ['id' => 1, 'color'=>'#181C32', 'label' => 'Black', 'class' => '', 'priority' => 3],
+        ['id' => 1, 'color'=>'#5096f2', 'label' => 'Blue', 'class' => '', 'priority' => 3],
         ['id' => 2, 'color'=>'#E4E6EF', 'label' => 'Gray', 'class' => '', 'priority' => 4],
-        ['id' => 3, 'color'=>'#1BC5BD', 'label' => 'Green', 'class' => '', 'priority' => 1],
-        ['id' => 4, 'color'=>'#F64E60', 'label' => 'Red', 'class' => '', 'priority' => 2],
+        ['id' => 3, 'color'=>'#000000', 'label' => 'Blackx', 'class' => '', 'priority' => 1],
+        ['id' => 4, 'color'=>'#404040', 'label' => 'Blacky', 'class' => '', 'priority' => 2],
+        ['id' => 5, 'color'=>'#404040', 'label' => 'Blacku', 'class' => '', 'priority' => 2],
     ],
 
     'voters' => [

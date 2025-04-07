@@ -241,7 +241,7 @@ JS);
                 </select>
 
             </div>
-    </div>
+        </div>
     <div  id="line-chart" ></div>
 </section>
 

@@ -51,8 +51,10 @@ $this->params['activeMenuLink'] = '/specialsurvey/settings';
 								<input name="SurveySettingForm[survey_color][{$key}][color]" type="color" value="{$survey['color']}" placeholder="hex" class="form-control" list>
 							</td>
 							<td>
+							
 								<input name="SurveySettingForm[survey_color][{$key}][label]" type="text" value="{$survey['label']}" class="form-control">
 							</td>
+							
 							
 							<!--<td><input  name="SurveySettingForm[survey_color][{$key}][priority]" type="number" value="{$survey['priority']}" class="form-control"></td>-->
 							

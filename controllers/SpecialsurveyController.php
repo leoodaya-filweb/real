@@ -1330,6 +1330,8 @@ t.*,
             3 => "#1bc5bd", // Green
             4 => "#f64e60"  // Red
         ];
+
+      
     
         foreach ($coordinates as $row) {
             $coordinates = json_decode($row['coordinates'], true);
@@ -1571,19 +1573,49 @@ t.*,
         $searchModel = new SpecialsurveySearch();
         $dataProvider = $searchModel->searchsummary(['SpecialsurveySearch' => App::queryParams()]);
     
-        $ageSegmentationData = [
-            ['ageRange' => '60+', 'maleCount' => 60, 'femaleCount' => 75],
-            ['ageRange' => '55-59', 'maleCount' => 90, 'femaleCount' => 95],
-            ['ageRange' => '45-54', 'maleCount' => 180, 'femaleCount' => 170],
-            ['ageRange' => '35-44', 'maleCount' => 200, 'femaleCount' => 180],
-            ['ageRange' => '25-34', 'maleCount' => 150, 'femaleCount' => 160],
-            ['ageRange' => '18-24', 'maleCount' => 100, 'femaleCount' => 120],
+        
+        // $ageSegmentationData = [
+        //     ['ageRange' => '60+', 'maleCount' => 60, 'femaleCount' => 75],
+        //     ['ageRange' => '55-59', 'maleCount' => 90, 'femaleCount' => 95],
+        //     ['ageRange' => '45-54', 'maleCount' => 180, 'femaleCount' => 170],
+        //     ['ageRange' => '35-44', 'maleCount' => 200, 'femaleCount' => 180],
+        //     ['ageRange' => '25-34', 'maleCount' => 150, 'femaleCount' => 160],
+        //     ['ageRange' => '18-24', 'maleCount' => 100, 'femaleCount' => 120],
+        // ];
+
+        $ageSegmentationData = Specialsurvey::find()
+        ->select([
+            // Define a CASE statement to categorize age ranges
+            'age_range' => new \yii\db\Expression("CASE
+                    WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) >= 60 THEN '60+'
+                    WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 55 AND 59 THEN '55-59'
+                    WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 45 AND 54 THEN '45-54'
+                    WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 35 AND 44 THEN '35-44'
+                    WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 25 AND 34 THEN '25-34'
+                    WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 18 AND 24 THEN '18-24'
+                    ELSE '0'
+                END"),
+            // Count the number of males
+            'male_count' => new \yii\db\Expression('SUM(CASE WHEN gender = "Male" THEN 1 ELSE 0 END)'),
+            // Count the number of females
+            'female_count' => new \yii\db\Expression('SUM(CASE WHEN gender = "Female" THEN 1 ELSE 0 END)')
+        ])
+        ->groupBy('age_range')  // Group by the age range
+        ->asArray()  // Return result as an array
+        ->all();
+
+        $colorData = [
+            1 => 'Black voters',
+            2 => 'Gray voters',
+            3 => 'Green voters',
+            4 => 'Red voters'
         ];
     
         return $this->render('voter_segmentation_by_age_gender', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
-            'ageSegmentationData' => $ageSegmentationData
+            'ageSegmentationData' => $ageSegmentationData,
+            'colorData' => $colorData
         ]);
     }
     
