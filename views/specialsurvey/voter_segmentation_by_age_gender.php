@@ -294,6 +294,28 @@ $this->registerJs(<<<JS
 
 
 
+    $(document).ready(function() {
+        // Listen for changes on any select with class 'filter-select'
+        $('.filter-select').change(function() {
+            // Create an object to hold the selected values
+            var selectedValues = {};
+
+            // Iterate over each select element with the 'filter-select' class
+            $('.filter-select').each(function() {
+                var selectId = $(this).attr('id'); // Get the ID of the select element
+                var selectedValue = $(this).val(); // Get the selected value
+
+                // Add the selected value to the object
+                selectedValues[selectId] = selectedValue;
+            });
+
+           
+            console.log(selectedValues);
+
+            
+        });
+    });
+
 
 
     renderDoughnutChart();
@@ -306,8 +328,9 @@ JS);
         <div>
             <p class="lead font-weight-bold mb-0">Filters: </p>
         </div>
+
         <div class="ml-5">
-            <select class="form-control" id="select-barangay">
+            <select class="form-control filter-select" id="select-barangay">
                 <?= Html::tag('option', 'All Barangay', ['value' => '']) ?>
                 <?php foreach (Specialsurvey::filter('barangay') as $name): ?>
                     <?= Html::tag('option', $name, [
@@ -317,8 +340,9 @@ JS);
                 <?php endforeach; ?>
             </select>
         </div>
+
         <div class="ml-5">
-            <select class="form-control" id="select-purok">
+            <select class="form-control filter-select" id="select-purok">
                 <?= Html::tag('option', 'All Purok', ['value' => '']) ?>
                 <?php foreach (Specialsurvey::filter('purok') as $name): ?>
                     <?= Html::tag('option', $name, [
@@ -328,22 +352,16 @@ JS);
                 <?php endforeach; ?>
             </select>
         </div>
+
         <div class="ml-5">
-             <select class="form-control" id="color-select"</select>>
-             <option value="" selected>All</option>
+            <select class="form-control filter-select" id="color-select">
+                <option value="" selected>All</option>
                 <?php foreach ($colorData as $id => $name): ?>
-                    
-                    <?php  // Exclude Gray Voters ?>
-                        <option value="<?= $id ?>" 
-                            data-content='<span class="badge" style="background-color: <?= strtolower($name) ?>; margin-right: 5px;"></span><?= $name ?>'>
-                            <?= $name ?>
-                        </option>
-                   
+                    <?php if (strpos(strtolower($name), 'gray') === false): ?>
+                        <option value="<?= $id ?>"><?= $name ?></option>
+                    <?php endif; ?>
                 <?php endforeach; ?>
             </select>
-
-          
-
         </div>
     </div>
 </section>
