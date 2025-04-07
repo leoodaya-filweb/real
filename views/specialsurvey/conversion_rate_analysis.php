@@ -180,11 +180,11 @@ $this->registerJs(<<<JS
         // console.warn("No color data available to render the chart.");
     }
 
-    function fetchVoterList(colorId) {
+    function fetchVoterList(selectedColors, selectedCriteria) {
         $.ajax({
             url: '/real/web/specialsurvey/conversion-rate-analysis',
             type: 'GET',
-            data: { criteria: 2, color_survey: colorId },
+            data: { criteria: selectedCriteria, color_survey: selectedColors },
             success: function(response) {
                 $('#voter-list').html(response);
             }
@@ -192,11 +192,18 @@ $this->registerJs(<<<JS
 
     }
 
-    // Handle dropdown change
-    document.querySelector("#color-select")?.addEventListener("change", function() {
-        fetchVoterList(this.value);
-        renderChart(this.value);
-       
+    
+
+    // Handle multi-select dropdown change
+    document.querySelectorAll("select").forEach(function(selectElement) {
+        selectElement.addEventListener("change", function() {
+            const selectedColors = document.querySelector("#color-select").value;
+            const selectedCriteria = document.querySelector("#select-criteria").value;
+
+            // Fetch voter list based on selected colors and criteria
+            fetchVoterList(selectedColors, selectedCriteria);
+            renderChart(selectedColors);
+        });
     });
 
 JS);
@@ -220,6 +227,20 @@ JS);
             </select>
 
         </div>
+        <div class="ml-5">
+                <p class="lead font-weight-bold mb-0">Criteria: </p>
+            </div>
+            <div class="ml-5">
+                <select class="form-control" id="select-criteria">
+                    <?= Html::foreach([1, 2, 3, 4, 5], function($n) {
+                        return Html::tag('option', "Criteria {$n}", [
+                            'value' => $n,
+                            'selected' => App::get("criteria{$n}_color_id") ? true: false
+                        ]);
+                    }) ?>
+                </select>
+
+            </div>
     </div>
     <div  id="line-chart" ></div>
 </section>
@@ -227,7 +248,9 @@ JS);
 
 
 <div class="specialsurvey-index-page" >
-    
+
+
+   
     <div class="mt-5"></div>
  
      

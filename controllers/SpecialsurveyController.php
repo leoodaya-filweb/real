@@ -942,7 +942,7 @@ t.*,
 
 
     
-    public function actionConversionRateAnalysis($criteria = 2, $color_survey = 1) {
+    public function actionConversionRateAnalysis($criteria = 1, $color_survey = 1) {
         $searchModel = new SpecialsurveySearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
     
@@ -955,10 +955,10 @@ t.*,
             ->all();
     
         $colorMapping = [
-            1 => '#181c32',
-            2 => '#e4e6ef',
-            3 => '#1bc5bd',
-            4 => '#f64e60'
+            1 => '#181c32', // Black
+            2 => '#e4e6ef', // Gray
+            3 => '#1bc5bd', // Green
+            4 => '#f64e60'  // Red
         ];
     
         $surveyLabels = [];
@@ -968,14 +968,15 @@ t.*,
             $periods[] = date('M d, Y', strtotime($survey['created_at']));
         }
     
+        // Prepare data for color charts
         $data = [];
         $grayVoterData = [];
-    
-        // Prepare the data for each color (Black, Gray, Green, Red)
+        
+        // Collect data for each color (Black, Gray, Green, Red)
         foreach ($colorMapping as $criteriaId => $color) {
             $counts = Specialsurvey::find()
                 ->select(['survey_name', 'COUNT(*) as voter_count'])
-                ->where(['criteria1_color_id' => $criteriaId])
+                ->where(['criteria' . $criteria . '_color_id' => $criteriaId])
                 ->groupBy(['survey_name'])
                 ->indexBy('survey_name')
                 ->asArray()
@@ -997,6 +998,8 @@ t.*,
                 3 => 'Green voters',
                 4 => 'Red voters'
             ];
+            
+            // Add color data to display in chart
             $data[] = [
                 'id' => $criteriaId,
                 'name' => $colorNames[$criteriaId] ?? "Voters (Color ID: $criteriaId)",
@@ -1005,108 +1008,90 @@ t.*,
             ];
         }
     
-        // Get survey data for matching voters
+        // Collect voter history and determine converted voters
         $surveyData = Specialsurvey::find()
-            ->select(['id', 'household_no', 'survey_name', 'criteria1_color_id', 'last_name', 'first_name', 'middle_name', 'barangay'])
+            ->select(['id', 'household_no', 'survey_name', 'criteria' . $criteria . '_color_id', 'last_name', 'first_name', 'middle_name', 'barangay'])
             ->orderBy(['survey_name' => SORT_ASC])
             ->all();
     
         $voterHistory = [];
         foreach ($surveyData as $survey) {
-            $voterKey = $survey->household_no . '_' . $survey->last_name . '_' . $survey->first_name. '_' . $survey->middle_name;
+            $voterKey = $survey->household_no . '_' . $survey->last_name . '_' . $survey->first_name . '_' . $survey->middle_name;
             if (!isset($voterHistory[$voterKey])) {
                 $voterHistory[$voterKey] = [];
             }
-            // Track all surveys for each voter
-            $voterHistory[$voterKey][$survey->survey_name] = $survey->criteria1_color_id;
+            $criteriaString = 'criteria' . $criteria . '_color_id';
+            $voterHistory[$voterKey][$survey->survey_name] = $survey->$criteriaString;
         }
     
+        // Identifying converted voters based on the color_survey
         $convertedVoters = [];
         foreach ($voterHistory as $voterKey => $surveys) {
             $lastColor = null;
             $lastSurvey = null;
             $wasGray = false;
     
-            // Track the most recent survey where the color changed
             foreach ($surveys as $surveyName => $colorId) {
-                if ($colorId == 2) {
-                    $wasGray = true; // This voter was gray at some point
-                } else if ($wasGray && $colorId != 2) {
+                if ($colorId == 2) { // Gray
+                    $wasGray = true;
+                } else if ($wasGray && $colorId == $color_survey) { // Matching conversion to target color
                     $lastColor = $colorId;
-                    $lastSurvey = $surveyName; 
-                    break; // Stop once they change color
+                    $lastSurvey = $surveyName;
+                    break;
                 }
             }
     
-            // If the voter was ever gray and is now gray again, exclude them
-            if ($wasGray && $lastColor != 2) {
+            if ($wasGray && $lastColor == $color_survey) {
                 list($householdNo, $lastName, $firstName, $middleName) = explode('_', $voterKey);
                 $voterData = Specialsurvey::find()
                     ->select(['id', 'survey_name', 'last_name', 'first_name', 'middle_name', 'household_no', 'barangay'])
-                    ->where(['household_no' => $householdNo, 'last_name' => $lastName, 'first_name' => $firstName, 'middle_name'=> $middleName])
-                    ->andWhere(['survey_name' => $lastSurvey]) // Ensure it's the most recent survey
+                    ->where([
+                        'household_no' => $householdNo,
+                        'last_name' => $lastName,
+                        'first_name' => $firstName,
+                        'middle_name' => $middleName,
+                        'survey_name' => $lastSurvey
+                    ])
                     ->one();
     
                 if ($voterData) {
                     $convertedVoters[] = [
                         'voter_id' => $voterData->id,
-                        
                     ];
                 }
             }
         }
     
-        // If there are converted voters, filter the dataProvider query by their IDs
+        // Filter the dataProvider based on converted voters
         if (empty($convertedVoters)) {
             $dataProvider->query->andWhere(['t.id' => null]);
         } else {
             $voterIds = array_column($convertedVoters, 'voter_id');
             $dataProvider->query->andWhere(['t.id' => $voterIds]);
-    
-            // Filter by the specified color survey if provided
-            if (!empty($color_survey)) {
-                $dataProvider->query->andWhere(['t.criteria' . $criteria . '_color_id' => $color_survey]);
-            }
         }
     
-        // Select the required fields for the dataProvider
-        $dataProvider->query->select([
-            't.*',
-            "(t.criteria{$criteria}_color_id) as criteria1_color_id"
-        ])->orderBy(['t.survey_name' => SORT_ASC]);
-    
-        // Ensure queryParams are set properly
-        $queryParams = Yii::$app->request->queryParams;
-        if (isset($queryParams['color_survey'])) {
-            $color_survey = explode(',', $queryParams['color_survey']);
-            $dataProvider->query->andFilterWhere(['t.criteria' . $criteria . '_color_id' => $color_survey]);
-        }
-    
-        // If it's an Ajax request, render the results using Ajax
         if (Yii::$app->request->isAjax) {
             return $this->renderAjax('index_list', [
                 'searchModel' => $searchModel,
                 'dataProvider' => $dataProvider,
             ]);
         }
-
-
     
-        // Render the page with the color data, gray data, and other analysis
         return $this->render('conversion_rate_analysis', [
             'labels' => json_encode(array_map(function($survey, $period) {
                 return $survey . " (" . $period . ")";
             }, $surveyLabels, $periods)),
-            // 'labels' => json_encode($surveyLabels),
             'periods' => json_encode($periods),
-            'colorData' => json_encode($data),
+            'colorData' => json_encode($data),  // Ensure data for chart is passed
             'grayData' => json_encode($grayVoterData),
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
         ]);
-        
-        
     }
+    
+    
+    
+    
     
     
     
