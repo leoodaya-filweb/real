@@ -1604,13 +1604,12 @@ t.*,
             ->asArray()
             ->all();
 
-        $colorData = [
-            1 => 'Blue voters',
-            2 => 'Gray voters',
-            3 => 'Blackx voters',
-            4 => 'Blacky voters',
-            5 => 'Blacku voters'
-        ];
+            $survey_colors = Specialsurvey::surveyColorReIndex();
+            $colorData = [];
+
+            foreach ($survey_colors as $key => $color) {
+                $colorData[$key] = $color['label'] . ' voters';
+            }
 
         if (Yii::$app->request->isAjax) {
             return $this->asJson([
