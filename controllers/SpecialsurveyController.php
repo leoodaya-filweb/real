@@ -1503,7 +1503,11 @@ t.*,
                 $color_survey = explode(',', $color_survey);
                 
             } else {
-                $color_survey = [1,2,3,4,5];
+                
+                // $color_survey = [1,2,3,4,5];
+                $survey_colors = Specialsurvey::surveyColorReIndex();
+
+                $color_survey = array_keys($survey_colors);
 
             }
             
