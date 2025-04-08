@@ -9,44 +9,28 @@
     /* @var $searchModel app\models\search\SpecialsurveySearch */
     /* @var $dataProvider yii\data\ActiveDataProvider */
     /* @var $ageSegmentationData array */
+        
+    /* @var $this yii\web\View */
+    /* @var $searchModel app\models\search\SpecialsurveySearch */
+    /* @var $dataProvider yii\data\ActiveDataProvider */
+
 
     $this->title = 'Voter Segmentation By Sector';
     $this->params['breadcrumbs'][] = $this->title;
 
+    $this->params['searchForm'] = 'testvv';
+    $this->params['showCreateButton'] = false;//true; 
+    $this->params['showExportButton'] = false; //true;
+    $this->params['activeMenuLink'] = '/specialsurvey/voter-segmentation-by-sector';
+    $this->params['createTitle'] = 'Create Survey';
 
-    $ageRanges = array_map(fn($item) => $item['age_range'], $ageSegmentationData);
-
-    $maleData = [];
-    $femaleData = [];
-
-    foreach ($ageSegmentationData as $item) {
-        // Negative values for male counts to make them appear on the left
-        $maleData[] = -(int)($item['male_count'] ?? 0); // Cast to int to avoid any unexpected string behavior
-        // Positive values for female counts to make them appear on the right
-        $femaleData[] = (int)($item['female_count'] ?? 0); // Cast to int to ensure proper behavior
-    }
-
-    $encodedAgeLabels = json_encode($ageRanges);
-    $encodedMaleData = json_encode($maleData);
-    $encodedFemaleData = json_encode($femaleData);
+  
 
     $this->registerJs(<<<JS
          
         $(document).ready(function () {
            
-            const ageLabels = $encodedAgeLabels;
-            const maleCounts = $encodedMaleData;
-            const femaleCounts = $encodedFemaleData;
-
-           
-            
-            renderChart(ageLabels,maleCounts, femaleCounts);
-
-            const maleCount = $encodedMaleData.reduce((acc, val) => acc + Math.abs(val), 0); // Summing absolute male data
-            const femaleCount = $encodedFemaleData.reduce((acc, val) => acc + val, 0); // Summing female data
-
-            
-            renderDoughnutChart(maleCount,femaleCount);
+          
 
             $('.filter-select').change(function () {
 
@@ -58,23 +42,16 @@
               
 
                 $.ajax({
-                    url: '/real/web/specialsurvey/voter-segmentation-by-age-and-genders',
+                    url: '/real/web/specialsurvey/voter-segmentation-by-sector',
                     method: 'get',
                     data: { barangay, purok, criteria, color },
                     success: function (response) {
                         
                         
-                        // Process Age Segmentation Data
-                        let ageLabels = response.ageSegmentationData.map(item => item.age_range);
-                        let maleCounts = response.ageSegmentationData.map(item => -parseInt(item.male_count || 0)); // Negative for left
-                        let femaleCounts = response.ageSegmentationData.map(item => parseInt(item.female_count || 0)); // Positive for right
-
-                        // Process Gender Distribution
-                        let totalMale = Math.abs(maleCounts.reduce((a, b) => a + b, 0));
-                        let totalFemale = femaleCounts.reduce((a, b) => a + b, 0);
-
-                        renderChart(ageLabels, maleCounts, femaleCounts);
-                        renderDoughnutChart(totalMale, totalFemale);
+                        console.log(response);
+                        
+                        // renderChart(ageLabels, maleCounts, femaleCounts);
+                        // renderDoughnutChart(totalMale, totalFemale);
                     },
                     error: function (e) {
                         console.log('AJAX error', e);
@@ -262,77 +239,11 @@
             chart.render();
         }
 
-        // Update renderDoughnutChart function
-        function renderDoughnutChart(maleCount, femaleCount) {
-            let totalCount = maleCount + femaleCount;
-            let malePercentage = (maleCount / totalCount) * 100;
-            let femalePercentage = (femaleCount / totalCount) * 100;
-
-            var options = {
-                chart: {
-                    type: 'donut',
-                    height: 500,
-                    width: 500
-                },
-                series: [malePercentage, femalePercentage],
-                labels: ['Male', 'Female'],
-                colors: ['#008FFB', '#FF4560'], // Blue for Male, Red for Female
-                plotOptions: {
-                    pie: {
-                        donut: {
-                            size: '60%', // Size of the doughnut hole
-                        }
-                    }
-                },
-                dataLabels: {
-                    enabled: true,
-                    formatter: function (val) {
-                        return val.toFixed(2) + "%"; // Show percentage with 2 decimals
-                    },
-                    style: {
-                        fontSize: '16px',
-                        fontFamily: 'Arial, Helvetica, sans-serif',
-                        fontWeight: 'bold',
-                        colors: ['#fff']
-                    }
-                },
-                tooltip: {
-                    shared: true,
-                    y: {
-                        formatter: function (val) {
-                            return val.toFixed(2) + "%"; // Tooltip with percentage
-                        }
-                    }
-                },
-                title: {
-                    text: 'Voter Demographics by Gender',
-                    align: 'center',
-                    style: {
-                        fontSize: '24px', // Increased font size for a bigger title
-                        fontWeight: 'bold',
-                        fontFamily: 'Roboto, Helvetica, sans-serif',
-                        color: '#333', // Dark color for title text
-                        letterSpacing: '1px', // Increased spacing between letters for better readability
-                    },
-                    offsetY: -5 
-                },
-                legend: {
-                    position: 'bottom', // Legend position
-                    horizontalAlign: 'center', // Center the legend items
-                    floating: false
-                }
-            };
-
-            document.querySelector("#genderDoughnutChart").innerHTML = "";
-            var chart = new ApexCharts(document.querySelector("#genderDoughnutChart"), options);
-            chart.render();
-        }
+        
 
 
 
-
-        // renderDoughnutChart(ageLabels, maleCounts, femaleCounts);
-        // renderChart(maleCounts, femaleCounts);
+        
     JS);
     ?>
 
@@ -400,12 +311,9 @@
     
 
     <!-- Chart Section -->
-    <div id="ageSegmentationChart" style="height: 500px; width: 100%; margin-top: 50px;"></div>
+    <div id="sectorSegmentationChart" style="height: 500px; width: 100%; margin-top: 50px;"></div>
 
 
 
-    <div class="d-flex align-items-center justify-content-center">
-        <div id="genderDoughnutChart" style="height: 500px;"></div>
-    </div>
 
 

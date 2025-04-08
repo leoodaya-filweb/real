@@ -1536,7 +1536,7 @@ t.*,
         // Proceed with the data fetching if valid barangays exist
         $searchModel = new SpecialsurveySearch();
         $dataProvider = $searchModel->searchvoters(['SpecialsurveySearch' => $queryParams]);
-        $dataProvider->query->andWhere(['t.barangay' => $validBarangays]);
+        // $dataProvider->query->andWhere(['t.barangay' => $validBarangays]); //Filter only the valid Barangays
     
         $dataProvider->query->select([
             't.id', 't.first_name', 't.middle_name', 't.last_name', 't.household_no',
@@ -1629,10 +1629,62 @@ t.*,
 
     public function actionVoterSegmentationBySector(){
 
+        return $this->render('voter_segmentation_by_sector');
     }
 
-    public function actionVoterSocialAssistanceBeneficiaries(){
+    public function actionVoterSocialAssistanceBeneficiaries($criteria= null){
+        $survey_color = Specialsurvey::surveyColorReIndex();
+		
+        $searchModel = new SpecialsurveySearch();
 
+        
+        $queryParams=App::queryParams();
+        
+         if (isset($queryParams['criteria1_color_id'])) {
+			unset($queryParams['criteria1_color_id']);
+			$criteria = $criteria ?: 1;
+		}
+		if (isset($queryParams['criteria2_color_id'])) {
+			unset($queryParams['criteria2_color_id']);
+			$criteria = $criteria ?: 2;
+		}
+		if (isset($queryParams['criteria3_color_id'])) {
+			unset($queryParams['criteria3_color_id']);
+			$criteria = $criteria ?: 3;
+		}
+		if (isset($queryParams['criteria4_color_id'])) {
+			unset($queryParams['criteria4_color_id']);
+			$criteria = $criteria ?: 4;
+		}
+		if (isset($queryParams['criteria5_color_id'])) {
+			unset($queryParams['criteria5_color_id']);
+			$criteria = $criteria ?: 5;
+		}
+		$criteria = $criteria ?: 1;
+        
+        $dataProvider = $searchModel->search(['SpecialsurveySearch' =>  $queryParams]);
+        
+        
+        
+        $criteria=2;    
+        $dataProvider->query->select(['
+                t.*, 
+                (t.criteria'.$criteria.'_color_id) as criteria1_color_id
+                ']);
+        
+        $color_survey = $queryParams['color_survey'];
+        if($color_survey){
+        $color_survey = explode(',', $color_survey);
+        $dataProvider->query->andFilterWhere(['t.criteria'.$criteria.'_color_id' => $color_survey]);
+        }
+
+
+        return $this->render('voter_social_assistance_beneficiaries', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+			'survey_color'=>$survey_color
+        ]);
+        
     }
     
     

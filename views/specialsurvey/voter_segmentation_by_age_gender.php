@@ -12,7 +12,11 @@
 
     $this->title = 'Voter Segmentation By Age and Genders';
     $this->params['breadcrumbs'][] = $this->title;
-
+    $this->params['searchForm'] = 'testvv';
+    $this->params['showCreateButton'] = false;//true; 
+    $this->params['showExportButton'] = false; //true;
+    $this->params['activeMenuLink'] = '/specialsurvey/voter-segmentation-by-age-and-genders';
+    $this->params['createTitle'] = 'Create Survey';
 
     $ageRanges = array_map(fn($item) => $item['age_range'], $ageSegmentationData);
 
