@@ -417,67 +417,101 @@ class Specialsurvey extends ActiveRecord
         return App::mapParams(App::setting('surveyColor')->survey_color);
     }
 
-    public function getDominantColor($total_black=0, $total_gray=0, $total_green=0, $total_red=0)
+    public function getDominantColor($total_blue=0, $total_gray=0, $total_blackx=0, $total_blacky=0, $total_blacku=0)
     {
         $color = '';
         $surveyColor = App::setting('surveyColor')->survey_color;
         $survey_color = ArrayHelper::index($surveyColor, 'id');
-        $array = [$total_black, $total_gray, $total_green, $total_red];
+        $array = [$total_blue, $total_gray, $total_blackx, $total_blacky, $total_blacku];
 
-        $color_max = max($total_black, $total_gray, $total_green, $total_red);
-        $total_color = array_sum($array); //-$color_max;
-        $total_color_percent = ($total_color * (App::setting('surveyColor')->dominance_percentage / 100)); //50%;
+        $color_max = max($total_blue, $total_gray, $total_blackx, $total_blacky, $total_blacku);
+        $total_color = array_sum($array);
+        $total_color_percent = ($total_color * (App::setting('surveyColor')->dominance_percentage / 100));
 
-        /*
-        $maxs = array_keys($array, max($array));
-        if ($maxs && count($maxs) > 1) {
-            $maxPriority = 0;
-            foreach ($maxs as $max) {
-                if ($surveyColor[$max]['priority'] > $maxPriority) {
-                    $maxPriority = $surveyColor[$max]['priority'];
-                    $color_max = $array[$max];
-                }
-            }
-        }
-        */
-
-        if($color_max == $total_black && $color_max >= $total_color_percent) {
-            $color = $survey_color[1]['color']; 
-            $percent = $total_color>0?($color_max/$total_color)*100:0; 
-        }
-        elseif($color_max == $total_green && $color_max >= $total_color_percent) {
-            $color = $survey_color[3]['color'];  
-            $percent = $total_color>0?($color_max/$total_color)*100:0; 
-        }
-        elseif($color_max == $total_red && $color_max >= $total_color_percent) {
-            $color = $survey_color[4]['color'];  
-            $percent = $total_color>0?($color_max/$total_color)*100:0; 
-        }
-        elseif($color_max == $total_gray && $color_max >= $total_color_percent) {
-            $color = $survey_color[2]['color'];   
-            $percent = $total_color>0?($color_max/$total_color)*100:0; 
-        }
-        else{
-            $color = $survey_color[2]['color'];  
-            $percent = $total_color>0?($total_gray/$total_color)*100:0; 
+        if ($color_max == $total_blue && $color_max >= $total_color_percent) {
+            $color = $survey_color[1]['color'];
+            $percent = $total_color > 0 ? ($color_max / $total_color) * 100 : 0;
+        } elseif ($color_max == $total_blackx && $color_max >= $total_color_percent) {
+            $color = $survey_color[3]['color'];
+            $percent = $total_color > 0 ? ($color_max / $total_color) * 100 : 0;
+        } elseif ($color_max == $total_blacky && $color_max >= $total_color_percent) {
+            $color = $survey_color[4]['color'];
+            $percent = $total_color > 0 ? ($color_max / $total_color) * 100 : 0;
+        } elseif ($color_max == $total_blacku && $color_max >= $total_color_percent) {
+            $color = $survey_color[5]['color'];
+            $percent = $total_color > 0 ? ($color_max / $total_color) * 100 : 0;
+        } elseif ($color_max == $total_gray && $color_max >= $total_color_percent) {
+            $color = $survey_color[2]['color'];
+            $percent = $total_color > 0 ? ($color_max / $total_color) * 100 : 0;
+        } else {
+            $color = $survey_color[2]['color'];
+            $percent = $total_color > 0 ? ($total_gray / $total_color) * 100 : 0;
         }
 
-        /*
-        if ((count(array_unique($array)) === 1)) {
-            $maxPriority = 0;
-            foreach ($surveyColor as $index => $sv) {
-                if ($sv['priority'] > $maxPriority) {
-                    $maxPriority = $sv['priority'];
-                    $color = $survey_color[$sv['id']]['color'];
-                }
-            }
-        }
-        */
-        
-        $color = ['color' => $color, 'percent'=>round($percent,2)];
-
-        return $color;
+        return ['color' => $color, 'percent' => round($percent, 2)];
     }
+
+    // public function getDominantColor($total_black=0, $total_gray=0, $total_green=0, $total_red=0)
+    // {
+    //     $color = '';
+    //     $surveyColor = App::setting('surveyColor')->survey_color;
+    //     $survey_color = ArrayHelper::index($surveyColor, 'id');
+    //     $array = [$total_black, $total_gray, $total_green, $total_red];
+
+    //     $color_max = max($total_black, $total_gray, $total_green, $total_red);
+    //     $total_color = array_sum($array); //-$color_max;
+    //     $total_color_percent = ($total_color * (App::setting('surveyColor')->dominance_percentage / 100)); //50%;
+
+    //     /*
+    //     $maxs = array_keys($array, max($array));
+    //     if ($maxs && count($maxs) > 1) {
+    //         $maxPriority = 0;
+    //         foreach ($maxs as $max) {
+    //             if ($surveyColor[$max]['priority'] > $maxPriority) {
+    //                 $maxPriority = $surveyColor[$max]['priority'];
+    //                 $color_max = $array[$max];
+    //             }
+    //         }
+    //     }
+    //     */
+
+    //     if($color_max == $total_black && $color_max >= $total_color_percent) {
+    //         $color = $survey_color[1]['color']; 
+    //         $percent = $total_color>0?($color_max/$total_color)*100:0; 
+    //     }
+    //     elseif($color_max == $total_green && $color_max >= $total_color_percent) {
+    //         $color = $survey_color[3]['color'];  
+    //         $percent = $total_color>0?($color_max/$total_color)*100:0; 
+    //     }
+    //     elseif($color_max == $total_red && $color_max >= $total_color_percent) {
+    //         $color = $survey_color[4]['color'];  
+    //         $percent = $total_color>0?($color_max/$total_color)*100:0; 
+    //     }
+    //     elseif($color_max == $total_gray && $color_max >= $total_color_percent) {
+    //         $color = $survey_color[2]['color'];   
+    //         $percent = $total_color>0?($color_max/$total_color)*100:0; 
+    //     }
+    //     else{
+    //         $color = $survey_color[2]['color'];  
+    //         $percent = $total_color>0?($total_gray/$total_color)*100:0; 
+    //     }
+
+    //     /*
+    //     if ((count(array_unique($array)) === 1)) {
+    //         $maxPriority = 0;
+    //         foreach ($surveyColor as $index => $sv) {
+    //             if ($sv['priority'] > $maxPriority) {
+    //                 $maxPriority = $sv['priority'];
+    //                 $color = $survey_color[$sv['id']]['color'];
+    //             }
+    //         }
+    //     }
+    //     */
+        
+    //     $color = ['color' => $color, 'percent'=>round($percent,2)];
+
+    //     return $color;
+    // }
 
     public static function colorPriority()
     {

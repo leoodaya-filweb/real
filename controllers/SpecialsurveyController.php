@@ -1256,6 +1256,7 @@ t.*,
     }
     
     
+    // FOR CAMPAIGN INTELLIGENCE DASHBOARD
     public function actionBarangayCoordinates1($criteria = '')
     {
         error_reporting(E_ERROR);
@@ -1325,10 +1326,11 @@ t.*,
     
         $features = [];
         $color_map = [
-            1 => "#181c32", // Black
+            1 => "#5096f2", // Blue
             2 => "#e4e6ef", // Gray
-            3 => "#1bc5bd", // Green
-            4 => "#f64e60"  // Red
+            3 => "#000000", // Blackx
+            4 => "#404040", // Blacky
+            5 => "#808080"  // Blacku
         ];
 
       
@@ -1339,56 +1341,59 @@ t.*,
             $total_gray = $barangay_data[$row['barangay']]["criteria{$criteria}_color_gray"] ?? 0;
             $total_green = $barangay_data[$row['barangay']]["criteria{$criteria}_color_green"] ?? 0;
             $total_red = $barangay_data[$row['barangay']]["criteria{$criteria}_color_red"] ?? 0;
-    
+
             $barangay_colors = [
                 1 => $total_black,
                 2 => $total_gray,
                 3 => $total_green,
                 4 => $total_red
             ];
-    
+
             arsort($barangay_colors);
             $dominant_color_id = key($barangay_colors);
             $dominant_color = $color_map[$dominant_color_id] ?? "#E4E6EF";
-    
+
+            // Calculate dominance percentage
+            $total_colors = array_sum($barangay_colors);
+            $dominance_percentage = $total_colors > 0 ? round(($barangay_colors[$dominant_color_id] / $total_colors) * 100, 2) : 0;
+
             // Ensure correct filtering logic
             if (!empty($color_survey) && !in_array($dominant_color_id, $color_survey)) {
-                
-                $dominant_color = "#808080"; // Default color for excluded barangays
+                $dominant_color = "#ffffff"; // Default color for excluded barangays
             }
-    
+
             $household_colors = [];
             foreach (App::setting('surveyColor')->survey_color as $key => $sc) {
-                $household_colors[] = [
-                    'label' => $sc['label'],
-                    'total' => Html::number($barangay_colors[$key + 1] ?? 0),
-                    'color' => $sc['color'],
-                ];
+            $household_colors[] = [
+                'label' => $sc['label'],
+                'total' => Html::number($barangay_colors[$key + 1] ?? 0),
+                'color' => $sc['color'],
+            ];
             }
 
-
-            if(	$row['barangay']=="Poblacion 61 (Barangay 2)"){
-                    $row['barangay']='Poblacion 61';
-            }elseif($row['barangay']=="Poblacion I (Barangay 1)"){
-                $row['barangay']='Poblacion 1';
+            if ($row['barangay'] == "Poblacion 61 (Barangay 2)") {
+            $row['barangay'] = 'Poblacion 61';
+            } elseif ($row['barangay'] == "Poblacion I (Barangay 1)") {
+            $row['barangay'] = 'Poblacion 1';
             }
-    
+
             $features[] = [
-                "type" => "Feature",
-                "properties" => [
-                    "barangay" => $row['barangay'],
-                    "color" => $dominant_color,
-                    "household" => Html::number(array_sum($barangay_colors)),
-                    "household_colors" => $household_colors,
-                    "url_link" => Url::to([
-                        'specialsurvey/report-per-purok',
-                        'barangay' => $row['barangay'],
-                        'groupPurok' => true
-                    ], true),
-                ],
-                "geometry" => [
-                    "type" => "Polygon",
-                ]
+            "type" => "Feature",
+            "properties" => [
+                "barangay" => $row['barangay'],
+                "color" => $dominant_color,
+                "percentage" => $dominance_percentage,
+                "household" => Html::number(array_sum($barangay_colors)),
+                "household_colors" => $household_colors,
+                "url_link" => Url::to([
+                'specialsurvey/report-per-purok',
+                'barangay' => $row['barangay'],
+                'groupPurok' => true
+                ], true),
+            ],
+            "geometry" => [
+                "type" => "Polygon",
+            ]
             ];
         }
     
@@ -1432,8 +1437,7 @@ t.*,
             ])
         ]);
     }
-
-
+   
     public function actionPopulationCoordinates2($criteria = '', $brgy = '', $hs = '')
     {
         $queryParams = App::queryParams();
@@ -1497,7 +1501,7 @@ t.*,
                 $color_survey = explode(',', $color_survey);
                 
             } else {
-                $color_survey = [1,2,3,4];
+                $color_survey = [1,2,3,4,5];
 
             }
             
@@ -1566,22 +1570,15 @@ t.*,
             "features" => $features,
         ]);
     }
-    
+    //////////////////////////////////////////////
     
 
-    public function actionVoterSegmentationByAgeAndGenders() {
+    public function actionVoterSegmentationByAgeAndGenders(  $barangay = null,  $purok =null,$color =null) {
         $searchModel = new SpecialsurveySearch();
         $dataProvider = $searchModel->searchsummary(['SpecialsurveySearch' => App::queryParams()]);
+
+
     
-        
-        // $ageSegmentationData = [
-        //     ['ageRange' => '60+', 'maleCount' => 60, 'femaleCount' => 75],
-        //     ['ageRange' => '55-59', 'maleCount' => 90, 'femaleCount' => 95],
-        //     ['ageRange' => '45-54', 'maleCount' => 180, 'femaleCount' => 170],
-        //     ['ageRange' => '35-44', 'maleCount' => 200, 'femaleCount' => 180],
-        //     ['ageRange' => '25-34', 'maleCount' => 150, 'femaleCount' => 160],
-        //     ['ageRange' => '18-24', 'maleCount' => 100, 'femaleCount' => 120],
-        // ];
 
         $ageSegmentationData = Specialsurvey::find()
         ->select([
@@ -1601,16 +1598,28 @@ t.*,
             'female_count' => new \yii\db\Expression('SUM(CASE WHEN gender = "Female" THEN 1 ELSE 0 END)')
         ])
         ->groupBy('age_range')  // Group by the age range
+        ->filterWhere([
+            'barangay' => $barangay, // Apply barangay filter if set
+            'purok' => $purok,       // Apply purok filter if set
+            'criteria1_color_id' => $color        // Apply color filter if set
+        ])
         ->asArray()  // Return result as an array
         ->all();
 
         $colorData = [
-            1 => 'Black voters',
+            1 => 'Blue voters',
             2 => 'Gray voters',
-            3 => 'Green voters',
-            4 => 'Red voters'
+            3 => 'Blackx voters',
+            4 => 'Blacky voters',
+            5 => 'Blacku voters'
         ];
-    
+
+        if(Yii::$app->request->isAjax){
+            return $this->asJson([
+                'ageSegmentationData' => $ageSegmentationData,
+                'colorData' => $colorData
+            ]);
+        }
         return $this->render('voter_segmentation_by_age_gender', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,

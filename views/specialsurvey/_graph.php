@@ -34,7 +34,8 @@ echo '<br/>Total Voters: '. number_format($total_voters);
 	<?= PieChart::widget([
 	        'width' => 330,
 	        'datasort'=>false,
-	        'colors'=>['#181c32','#e4e6ef','#1bc5bd','#f64e60'],
+              'colors' => ['#5096f2', '#e4e6ef', '#000000', '#404040', '#808080'],
 			//'data' => ['Black' => 5,	'Gray' => 50,	'Green' => 20,'Red'=>5]
 			'data' => $data
 		]) ?>
+           

@@ -181,12 +181,13 @@ CSS, ['type' => "text/css"]);
         
         
         <div class="ml-5 text-center color-voters" >
-          <div id="checkbox-colors" class="checkbox-list"> 
-        	  <label class="checkbox"><input type="checkbox" checked value="1" name="color[]">  <span class="color-box" style="background: #181c32;"></span>  Black</label>
-              <label class="checkbox"> <input type="checkbox" checked value="2" name="color[]">  <span class="color-box" style="background: #e4e6ef;"></span>  Gray</label>
-              <label class="checkbox"> <input type="checkbox" checked value="3" name="color[]">  <span class="color-box" style="background: #1bc5bd;"></span>  Green</label>
-              <label class="checkbox"> <input type="checkbox" checked value="4" name="color[]">  <span class="color-box" style="background: #f64e60;"></span>  Red</label>
-          </div>
+        <div id="checkbox-colors" class="checkbox-list"> 
+            <label class="checkbox"><input type="checkbox" checked value="1" name="color[]">  <span class="color-box" style="background: #5096f2;"></span>  Blue</label>
+            <label class="checkbox"> <input type="checkbox" checked value="2" name="color[]">  <span class="color-box" style="background: #e4e6ef;"></span>  Gray</label>
+            <label class="checkbox"> <input type="checkbox" checked value="3" name="color[]">  <span class="color-box" style="background: #000000;"></span>  Blackx</label>
+            <label class="checkbox"> <input type="checkbox" checked value="4" name="color[]">  <span class="color-box" style="background: #404040;"></span>  Blacky</label>
+            <label class="checkbox"> <input type="checkbox" checked value="5" name="color[]">  <span class="color-box" style="background: #808080;"></span>  Blacku</label>
+        </div>
         </div>
         
         
@@ -356,10 +357,11 @@ CSS, ['type' => "text/css"]);
                             'circle-color': [
                                 'match',
                                 ['get', 'criteria1_color_id'],
-                                1, '#181c32',
-                                2, '#e4e6ef',
-                                3, '#1bc5bd',
-                                4, '#f64e60',
+                                1, '#5096f2', // Blue
+                                2, '#e4e6ef', // Gray
+                                3, '#000000', // Blackx
+                                4, '#404040', // Blacky
+                                5, '#808080', // Blacku
                                 /* other */ '#F64E60'
                             ]
                         },

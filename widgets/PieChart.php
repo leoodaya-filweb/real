@@ -9,20 +9,24 @@ class PieChart extends BaseWidget
     public $colors;
     public $datasort=true;
     public $options = [
-        // series: {$series},
         'chart' => [
             'width' => 400,
             'type' => 'pie',
         ],
-        // 'labels' => {$labels},
-        'legend' => ['position' => 'bottom'],
+        'legend' => [
+            'position' => 'bottom',
+            'fontSize' => '9px', // Adjust font size to make the legend smaller
+            'itemMargin' => [
+                'horizontal' => 5, // Add horizontal padding
+                'vertical' => 5   // Add vertical padding
+            ]
+        ],
         'tooltip' => [
             'x' => [
                 'show' => false
             ],
             'y' => [
                 'formatter' => 'function(value, series) {
-                    // use series argument to pull original string from chart data
                     return value.toFixed(2);
                 }'
             ]
@@ -35,7 +39,12 @@ class PieChart extends BaseWidget
                         'width' => 200
                     ],
                     'legend' => [
-                        'position' => 'bottom'
+                        'position' => 'bottom',
+                        'fontSize' => '10px', // Smaller font size for smaller screens
+                        'itemMargin' => [
+                            'horizontal' => 3,
+                            'vertical' => 3
+                        ]
                     ]
                 ]
             ]
