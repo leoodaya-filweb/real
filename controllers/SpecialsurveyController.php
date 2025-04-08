@@ -1573,17 +1573,15 @@ t.*,
     //////////////////////////////////////////////
     
 
-    public function actionVoterSegmentationByAgeAndGenders(  $barangay = null,  $purok =null,$color =null) {
+    public function actionVoterSegmentationByAgeAndGenders($barangay = null, $purok = null, $criteria = null, $color = null) {
         $searchModel = new SpecialsurveySearch();
         $dataProvider = $searchModel->searchsummary(['SpecialsurveySearch' => App::queryParams()]);
 
-
-    
+        $criteria = $criteria ?? 1;
 
         $ageSegmentationData = Specialsurvey::find()
-        ->select([
-            // Define a CASE statement to categorize age ranges
-            'age_range' => new \yii\db\Expression("CASE
+            ->select([
+                'age_range' => new \yii\db\Expression("CASE
                     WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) >= 60 THEN '60+'
                     WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 55 AND 59 THEN '55-59'
                     WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 45 AND 54 THEN '45-54'
@@ -1592,19 +1590,17 @@ t.*,
                     WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 18 AND 24 THEN '18-24'
                     ELSE '0'
                 END"),
-            // Count the number of males
-            'male_count' => new \yii\db\Expression('SUM(CASE WHEN gender = "Male" THEN 1 ELSE 0 END)'),
-            // Count the number of females
-            'female_count' => new \yii\db\Expression('SUM(CASE WHEN gender = "Female" THEN 1 ELSE 0 END)')
-        ])
-        ->groupBy('age_range')  // Group by the age range
-        ->filterWhere([
-            'barangay' => $barangay, // Apply barangay filter if set
-            'purok' => $purok,       // Apply purok filter if set
-            'criteria1_color_id' => $color        // Apply color filter if set
-        ])
-        ->asArray()  // Return result as an array
-        ->all();
+                'male_count' => new \yii\db\Expression('SUM(CASE WHEN gender = "Male" THEN 1 ELSE 0 END)'),
+                'female_count' => new \yii\db\Expression('SUM(CASE WHEN gender = "Female" THEN 1 ELSE 0 END)')
+            ])
+            ->groupBy('age_range')
+            ->filterWhere([
+                'barangay' => $barangay,
+                'purok' => $purok,
+                'criteria' . $criteria . '_color_id' => $color
+            ])
+            ->asArray()
+            ->all();
 
         $colorData = [
             1 => 'Blue voters',
@@ -1614,7 +1610,7 @@ t.*,
             5 => 'Blacku voters'
         ];
 
-        if(Yii::$app->request->isAjax){
+        if (Yii::$app->request->isAjax) {
             return $this->asJson([
                 'ageSegmentationData' => $ageSegmentationData,
                 'colorData' => $colorData

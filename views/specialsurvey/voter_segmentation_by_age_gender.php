@@ -31,11 +31,28 @@
     $encodedFemaleData = json_encode($femaleData);
 
     $this->registerJs(<<<JS
-        
+         
         $(document).ready(function () {
+           
+            const ageLabels = $encodedAgeLabels;
+            const maleCounts = $encodedMaleData;
+            const femaleCounts = $encodedFemaleData;
+
+           
+            
+            renderChart(ageLabels,maleCounts, femaleCounts);
+
+            const maleCount = $encodedMaleData.reduce((acc, val) => acc + Math.abs(val), 0); // Summing absolute male data
+            const femaleCount = $encodedFemaleData.reduce((acc, val) => acc + val, 0); // Summing female data
+
+            
+            renderDoughnutChart(maleCount,femaleCount);
+
             $('.filter-select').change(function () {
+
                 var barangay = $('#select-barangay').val();
                 var purok = $('#select-purok').val();
+                var criteria = $('#select-criteria').val();
                 var color = $('#color-select').val();
 
               
@@ -43,7 +60,7 @@
                 $.ajax({
                     url: '/real/web/specialsurvey/voter-segmentation-by-age-and-genders',
                     method: 'get',
-                    data: { barangay, purok, color },
+                    data: { barangay, purok, criteria, color },
                     success: function (response) {
                         
                         
@@ -65,6 +82,7 @@
                 });
             });
         });
+
         function renderChart(ageLabels, maleCounts, femaleCounts) {
             var options = {
                 series: [
@@ -253,7 +271,8 @@
             var options = {
                 chart: {
                     type: 'donut',
-                    height: 350
+                    height: 500,
+                    width: 500
                 },
                 series: [malePercentage, femalePercentage],
                 labels: ['Male', 'Female'],
@@ -286,13 +305,14 @@
                     }
                 },
                 title: {
-                    text: 'Voter Gender Distribution',
+                    text: 'Voter Demographics by Gender',
                     align: 'center',
                     style: {
-                        fontSize: '18px',
-                        fontWeight: '600',
-                        color: '#333',
-                        fontFamily: 'Arial, Helvetica, sans-serif'
+                        fontSize: '24px', // Increased font size for a bigger title
+                        fontWeight: 'bold',
+                        fontFamily: 'Roboto, Helvetica, sans-serif',
+                        color: '#333', // Dark color for title text
+                        letterSpacing: '1px', // Increased spacing between letters for better readability
                     },
                     offsetY: -5 
                 },
@@ -347,12 +367,23 @@
             </div>
 
             <div class="ml-5">
+                <select class="form-control  filter-select" id="select-criteria">
+                    <?= Html::foreach([1, 2, 3, 4, 5], function($n) {
+                        return Html::tag('option', "Criteria {$n}", [
+                            'value' => $n,
+                            'selected' => App::get("criteria{$n}_color_id") ? true: false
+                        ]);
+                    }) ?>
+                </select>
+            </div>
+
+            <div class="ml-5">
                 <select class="form-control filter-select" id="color-select">
-                    <option value="" selected>All</option>
+                    <option value="" selected>All Colors</option>
                     <?php foreach ($colorData as $id => $name): ?>
-                        <?php if (strpos(strtolower($name), 'gray') === false): ?>
+                       
                             <option value="<?= $id ?>"><?= $name ?></option>
-                        <?php endif; ?>
+                      
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -366,12 +397,15 @@
     <div class="mt-5">
 
     </div>
+    
 
     <!-- Chart Section -->
-    <div id="ageSegmentationChart" style="height: 500px; width: 100%;"></div>
+    <div id="ageSegmentationChart" style="height: 500px; width: 100%; margin-top: 50px;"></div>
 
 
 
+    <div class="d-flex align-items-center justify-content-center">
         <div id="genderDoughnutChart" style="height: 500px;"></div>
+    </div>
 
 
