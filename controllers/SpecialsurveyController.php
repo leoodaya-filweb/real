@@ -1636,7 +1636,8 @@ t.*,
             ["name" => "Women", "data" => [2, 3, 4, 5, 0]],
         ];
         
-        $barangay_labels = ["Blue", "BlackX", "BlackY", "BlackU", "Gray"];
+        $survey_colors = Specialsurvey::surveyColorReIndex();
+        $barangay_labels = array_column($survey_colors, 'label');
         $chart_data_json = json_encode($chart_data);
         $barangay_labels_json = json_encode($barangay_labels);
 

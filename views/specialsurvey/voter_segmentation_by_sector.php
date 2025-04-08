@@ -36,7 +36,7 @@
                 var barangay = $('#select-barangay').val();
                 var purok = $('#select-purok').val();
                 var criteria = $('#select-criteria').val();
-                var color = $('#color-select').val();
+               
 
               
 
@@ -130,7 +130,6 @@
                 },
                 colors: ['#D72638', '#1B98E0', '#F4A261', '#2E4057'], // Vibrant professional colors
 
-                // ✅ NEW: Display sector names inside the stacked bars
                 dataLabels: {
                     enabled: true,
                     style: { fontSize: '13px', fontWeight: 'bold', colors: ['#fff'] },
