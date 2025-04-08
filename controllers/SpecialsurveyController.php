@@ -1539,7 +1539,7 @@ t.*,
         // $dataProvider->query->andWhere(['t.barangay' => $validBarangays]); //Filter only the valid Barangays
     
         $dataProvider->query->select([
-            't.id', 't.first_name', 't.middle_name', 't.last_name', 't.household_no',
+            't.id', 't.first_name', 't.middle_name', 't.last_name', 't.household_no', 't.leader',
             '(t.criteria' . $criteria . '_color_id) as criteria1_color_id',
             'count(t.id) as total_voters', 'hs.longitude', 'hs.latitude', 't.barangay'
         ]);

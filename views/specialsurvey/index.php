@@ -343,7 +343,7 @@ CSS, ['type' => "text/css"]);
                 
                    map.addSource('voters', {
                         type: 'geojson',
-                        data: datasourceUrl // This should come from your backend where only valid barangays are returned
+                        data: datasourceUrl
                     });
 
                     map.addLayer({
@@ -357,12 +357,12 @@ CSS, ['type' => "text/css"]);
                             'circle-color': [
                                 'match',
                                 ['get', 'criteria1_color_id'],
-                                1, '#5096f2', // Blue
+                                1, ['case', ['==', ['get', 'leader'], 1], '#ADD8E6', '#5096f2'], // Blue
                                 2, '#e4e6ef', // Gray
                                 3, '#000000', // Blackx
                                 4, '#404040', // Blacky
                                 5, '#808080', // Blacku
-                                /* other */ '#F64E60'
+                                /* other */ '#F64E60' // Default
                             ]
                         },
                         source: 'voters'
