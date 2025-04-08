@@ -43,6 +43,7 @@ $currentChangedVotersQuery = Specialsurvey::find()
     ->andWhere(['in', 'first_name', ArrayHelper::getColumn($previousGrayVotersQuery, 'first_name')])
     ->andWhere(['in', 'middle_name', ArrayHelper::getColumn($previousGrayVotersQuery, 'middle_name')])
     ->andWhere(['in', 'precinct_no', ArrayHelper::getColumn($previousGrayVotersQuery, 'precinct_no')])
+    ->andWhere(['in', 'purok', ArrayHelper::getColumn($previousGrayVotersQuery, 'purok')])
     ->andWhere(['<>', 'criteria'.$criteria.'_color_id', 2]) // Changed from gray
     ->andFilterWhere(['barangay' => $selectedBarangay ?: null])
     ->asArray()
@@ -57,7 +58,9 @@ $currentGrayVotersQuery = Specialsurvey::find()
     ->asArray()
     ->all();
 
-$series = ['gray' => [], 'black' => [], 'green' => [], 'red' => []];
+
+$series = ['gray' => [], 'blackX' => [], 'blackY' => [], 'blackU' => [], 'blue' => []];
+
 $barangays = [];
 
 // Sanitize and process the data for each query result
@@ -67,9 +70,10 @@ foreach ($currentChangedVotersQuery as $row) {
     }
 
     switch ($row['criteria'.$criteria.'_color_id']) {
-        case 1: $series['black'][$row['barangay']][$row['purok']] = ($series['black'][$row['barangay']][$row['purok']] ?? 0) + 1; break;
-        case 3: $series['green'][$row['barangay']][$row['purok']] = ($series['green'][$row['barangay']][$row['purok']] ?? 0) + 1; break;
-        case 4: $series['red'][$row['barangay']][$row['purok']] = ($series['red'][$row['barangay']][$row['purok']] ?? 0) + 1; break;
+        case 1: $series['blue'][$row['barangay']][$row['purok']] = ($series['blue'][$row['barangay']][$row['purok']] ?? 0) + 1; break;
+        case 3: $series['blackX'][$row['barangay']][$row['purok']] = ($series['blackX'][$row['barangay']][$row['purok']] ?? 0) + 1; break;
+        case 4: $series['blackY'][$row['barangay']][$row['purok']] = ($series['blackY'][$row['barangay']][$row['purok']] ?? 0) + 1; break;
+        case 5: $series['blackU'][$row['barangay']][$row['purok']] = ($series['blackU'][$row['barangay']][$row['purok']] ?? 0) + 1; break;
     }
 }
 
@@ -89,23 +93,26 @@ foreach ($barangays as $barangay) {
     // Merge the arrays for gray, black, green, and red voters for this barangay
     $purok_labels = array_keys(array_merge(
         $series['gray'][$barangay] ?? [],
-        $series['black'][$barangay] ?? [],
-        $series['green'][$barangay] ?? [],
-        $series['red'][$barangay] ?? []
+        $series['blue'][$barangay] ?? [],
+        $series['blackX'][$barangay] ?? [],
+        $series['blackY'][$barangay] ?? [],
+        $series['blackU'][$barangay] ?? []
     ));
 
     $barangayChartData = [
         ['name' => "Gray Voters", 'data' => []],
-        ['name' => "Converted to Black", 'data' => []],
-        ['name' => "Converted to Green", 'data' => []],
-        ['name' => "Converted to Red", 'data' => []]
+        ['name' => "Converted to Blue", 'data' => []],
+        ['name' => "Converted to BlackX", 'data' => []],
+        ['name' => "Converted to BlackY", 'data' => []],
+        ['name' => "Converted to BlackU", 'data' => []]
     ];
 
     foreach ($purok_labels as $purok) {
         $barangayChartData[0]['data'][] = $series['gray'][$barangay][$purok] ?? 0;
-        $barangayChartData[1]['data'][] = $series['black'][$barangay][$purok] ?? 0;
-        $barangayChartData[2]['data'][] = $series['green'][$barangay][$purok] ?? 0;
-        $barangayChartData[3]['data'][] = $series['red'][$barangay][$purok] ?? 0;
+        $barangayChartData[1]['data'][] = $series['blue'][$barangay][$purok] ?? 0;
+        $barangayChartData[2]['data'][] = $series['blackX'][$barangay][$purok] ?? 0;
+        $barangayChartData[3]['data'][] = $series['blackY'][$barangay][$purok] ?? 0;
+        $barangayChartData[3]['data'][] = $series['blackU'][$barangay][$purok] ?? 0;
     }
 
     $chart_data[$barangay] = json_encode($barangayChartData);
@@ -128,7 +135,7 @@ foreach ($barangays as $barangay) {
             tooltip: { y: { formatter: function (val) { return val + ' Voters'; } } },
             fill: { opacity: 1 },
             legend: { position: 'top', horizontalAlign: 'left', offsetX: 40 },
-            colors: ['#e4e6ef', '#181c32', '#1bc5bd', '#f64e60'],
+            colors: ['#e4e6ef','#5096f2', '#000000',  '#404040', '#808080'], // Gray, BlackX, Blue, BlackY, BlackU
         };
         
         var chart = new ApexCharts(document.querySelector("#chart-purok{$safeBarangayName}"), options);

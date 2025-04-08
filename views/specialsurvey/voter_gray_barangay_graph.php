@@ -143,7 +143,7 @@ $this->registerWidgetJs('brgygraph', <<<JS
         tooltip: { y: { formatter: function (val) { return val + " Voters"; } } },
         fill: { opacity: 1 },
         legend: { position: 'top', horizontalAlign: 'left', offsetX: 40 },
-        colors: ['#e4e6ef', '#000000', '#5096f2', '#404040', '#808080'], // Gray, BlackX, Blue, BlackY, BlackU
+        colors: ['#e4e6ef', '#5096f2', '#000000',  '#404040', '#808080'], // Gray, Blue, BlackX,  BlackY, BlackU
     };
     var chart = new ApexCharts(document.querySelector("#chart-barangay"), options);
     chart.render();
