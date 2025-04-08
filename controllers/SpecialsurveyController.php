@@ -1468,6 +1468,7 @@ t.*,
         }
     
         // ================== Determine Barangays with Matching Dominant Color ==================
+
         $barangays = Barangay::find()->all();
      
         $validBarangays = [];
@@ -1494,7 +1495,7 @@ t.*,
                 if ($data['total'] > $maxCount) {
                     $dominantColor = $color;
                     $maxCount = $data['total'];
-                }
+                }   
             }
 
             $color_survey = $queryParams['color_survey'];
@@ -1539,6 +1540,12 @@ t.*,
         $dataProvider = $searchModel->searchvoters(['SpecialsurveySearch' => $queryParams]);
         // $dataProvider->query->andWhere(['t.barangay' => $validBarangays]); //Filter only the valid Barangays
     
+        // $dataProvider->query->andWhere(['or', 
+        //     ['t.barangay' => $validBarangays], 
+        //     ['t.barangay' => ['Poblacion 61 (Barangay 2)', 'Poblacion I (Barangay 1)']]
+        // ]); // Filter only the valid Barangays including specific cases
+
+
         $dataProvider->query->select([
             't.id', 't.first_name', 't.middle_name', 't.last_name', 't.household_no', 't.leader',
             '(t.criteria' . $criteria . '_color_id) as criteria1_color_id',
@@ -1547,7 +1554,6 @@ t.*,
     
         $dataProvider->query->andFilterWhere(['t.criteria'.$criteria.'_color_id' => $color_survey]);
 
-        // $dataProvider->query->andWhere(['t.barangay' => $validBarangays]);
     
         $mdata = $dataProvider->query->all();
         $survey_color = App::setting('surveyColor')->survey_color;
@@ -1555,6 +1561,7 @@ t.*,
     
         $features = [];
         foreach ($mdata as $row) {
+
             $row['color_label'] = $survey_color[$row['criteria1_color_id']];
             
             $features[] = [
@@ -1566,7 +1573,7 @@ t.*,
                     "coordinates" => [$row['longitude'], $row['latitude']]
                 ]
             ];
-        }
+        }       
     
         return $this->asJsonNumeric([
             "type" => "FeatureCollection",
@@ -1710,17 +1717,6 @@ t.*,
 
 
     
-    
-    
-
-    
-    
-    
-    
-    
-
-
-
 
     // ////////////////////////////////////////////////////
     
