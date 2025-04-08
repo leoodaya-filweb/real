@@ -1630,10 +1630,10 @@ t.*,
     public function actionVoterSegmentationBySector($barangay = null, $purok = null, $criteria = null){
         
         $chart_data = [
-            ["name" => "Senior", "data" => [5, 3, 2, 4, 6]], 
+            ["name" => "Senior", "data" => [0, 3, 2, 4, 6]], 
             ["name" => "PWD", "data" => [1, 2, 3, 1, 2]],
             ["name" => "Youth", "data" => [4, 5, 6, 3, 2]],
-            ["name" => "Women", "data" => [2, 3, 4, 5, 6]],
+            ["name" => "Women", "data" => [2, 3, 4, 5, 0]],
         ];
         
         $barangay_labels = ["Blue", "BlackX", "BlackY", "BlackU", "Gray"];

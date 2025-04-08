@@ -80,8 +80,8 @@
                 plotOptions: { 
                     bar: { 
                         horizontal: false, 
-                        columnWidth: '50%', // Makes bars thinner for a sleek look
-                        borderRadius: 5, // Adds rounded corners for modern design
+                        columnWidth: '50%', // Thinner bars for a sleek look
+                        borderRadius: 5, // Rounded corners
                     } 
                 },
                 stroke: { width: 1, colors: ['#fff'] },
@@ -89,21 +89,10 @@
                     text: 'Voter Segmentation By Sector',
                     align: 'center', 
                     style: { 
-                        fontSize: '26px', // BIGGER title
+                        fontSize: '26px', // BIG BOLD TITLE
                         fontWeight: 'bold',
-                        color: '#333' // Dark gray for a professional look
+                        color: '#333' 
                     } 
-                },
-                subtitle: {
-                    text: '{$chartTitle}', // Secondary title (optional)
-                    align: 'center',
-                    margin: 10,
-                    offsetY: 10,
-                    style: {
-                        fontSize: '18px',
-                        fontWeight: 'bold',
-                        color: '#555'
-                    }
                 },
                 xaxis: { 
                     categories: label,
@@ -115,8 +104,7 @@
                 },
                 yaxis: {
                     labels: { 
-                        style: { fontSize: '13px', colors: '#555' },
-                        formatter: function (val) { return val.toLocaleString(); } // Formats numbers with commas
+                        style: { fontSize: '13px', colors: '#555' }
                     },
                     title: { 
                         text: 'Number of Voters',
@@ -127,10 +115,10 @@
                     theme: 'dark', 
                     y: { formatter: function (val) { return val + " Voters"; } } 
                 },
-                fill: { opacity: 0.9 }, // Slight transparency for a polished look
+                fill: { opacity: 0.9 },
                 grid: {
-                    borderColor: '#e0e0e0', // Light gray grid lines
-                    strokeDashArray: 4, // Subtle dashed lines
+                    borderColor: '#e0e0e0',
+                    strokeDashArray: 4,
                     padding: { left: 10, right: 10, top: 20, bottom: 20 }
                 },
                 legend: { 
@@ -141,11 +129,21 @@
                     labels: { colors: '#333' }
                 },
                 colors: ['#D72638', '#1B98E0', '#F4A261', '#2E4057'], // Vibrant professional colors
+
+                // ✅ NEW: Display sector names inside the stacked bars
+                dataLabels: {
+                    enabled: true,
+                    style: { fontSize: '13px', fontWeight: 'bold', colors: ['#fff'] },
+                    formatter: function (val, opts) {
+                        return opts.w.config.series[opts.seriesIndex].name; // Show sector name (Senior, PWD, etc.)
+                    }
+                }
             };
 
             var chart = new ApexCharts(document.querySelector("#sectorSegmentationChart"), options);
             chart.render();
         }
+
 
 
 
