@@ -40,8 +40,7 @@ if ($selectedBarangay) {
 }
 
 $barangays = $barangaysQuery->column();
-
-$series = ['gray' => [], 'black' => [], 'green' => [], 'red' => []];
+$series = ['gray' => [], 'blackX' => [], 'blackY' => [], 'blackU' => [], 'blue' => []];
 $barangay_labels = [];
 
 foreach ($barangays as $barangay) {
@@ -83,33 +82,44 @@ foreach ($barangays as $barangay) {
 
     
     $barangay_labels[] = $barangay;
-    $convertedCounts = ['black' => 0, 'green' => 0, 'red' => 0];
+    $convertedCounts = [
+     
+        'blue' => 0,
+        'blackX' => 0,
+        'blackY' => 0,
+        'blackU' => 0,
+    ];
     
     foreach ($currentChangedVotersQuery as $matchedVoter) {
         switch ($matchedVoter['criteria'.$criteria.'_color_id']) {
             case 1:
-                $convertedCounts['black']++;
+                $convertedCounts['blue']++;
                 break;
             case 3:
-                $convertedCounts['green']++;
+                $convertedCounts['blackX']++;
                 break;
             case 4:
-                $convertedCounts['red']++;
+                $convertedCounts['blackY']++;
+                break;
+            case 5:
+                $convertedCounts['blackU']++;
                 break;
         }
     }
     
     $series['gray'][] = $currentGrayVotersQuery;
-    $series['black'][] = $convertedCounts['black'];
-    $series['green'][] = $convertedCounts['green'];
-    $series['red'][] = $convertedCounts['red'];
+    $series['blue'][] = $convertedCounts['blue'];
+    $series['blackX'][] = $convertedCounts['blackX'];
+    $series['blackY'][] = $convertedCounts['blackY'];
+    $series['blackU'][] = $convertedCounts['blackU'];
 }
 
 $chart_data = [
     ['name' => "Current Gray Voters", 'data' => $series['gray']],
-    ['name' => "Converted to Black", 'data' => $series['black']],
-    ['name' => "Converted to Green", 'data' => $series['green']],
-    ['name' => "Converted to Red", 'data' => $series['red']],
+    ['name' => "Converted to Blue", 'data' => $series['blue']],
+    ['name' => "Converted to BlackX", 'data' => $series['blackX']],
+    ['name' => "Converted to BlackY", 'data' => $series['blackY']],
+    ['name' => "Converted to BlackU", 'data' => $series['blackU']],
 ];
 
 $chart_data_json = json_encode($chart_data);
@@ -133,7 +143,7 @@ $this->registerWidgetJs('brgygraph', <<<JS
         tooltip: { y: { formatter: function (val) { return val + " Voters"; } } },
         fill: { opacity: 1 },
         legend: { position: 'top', horizontalAlign: 'left', offsetX: 40 },
-        colors: ['#e4e6ef', '#181c32', '#1bc5bd', '#f64e60'] // Gray, Black, Green, Red
+        colors: ['#e4e6ef', '#000000', '#5096f2', '#404040', '#808080'], // Gray, BlackX, Blue, BlackY, BlackU
     };
     var chart = new ApexCharts(document.querySelector("#chart-barangay"), options);
     chart.render();
