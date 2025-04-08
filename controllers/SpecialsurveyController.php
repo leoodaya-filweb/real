@@ -955,10 +955,11 @@ t.*,
             ->all();
     
         $colorMapping = [
-            1 => '#181c32', // Black
+            1 => '#5096f2', // Blue
             2 => '#e4e6ef', // Gray
-            3 => '#1bc5bd', // Green
-            4 => '#f64e60'  // Red
+            3 => '#000000', // Blackx
+            4 => '#404040', // Blacky
+            5 => '#808080'  // Blacku
         ];
     
         $surveyLabels = [];
@@ -993,10 +994,11 @@ t.*,
             }
     
             $colorNames = [
-                1 => 'Black voters',
+                1 => 'Blue voters',
                 2 => 'Gray voters',
-                3 => 'Green voters',
-                4 => 'Red voters'
+                3 => 'Blackx voters',
+                4 => 'Blacky voters',
+                5 => 'Blacku voters'
             ];
     
             // Add color data to display in chart
