@@ -10,7 +10,7 @@
     /* @var $dataProvider yii\data\ActiveDataProvider */
     /* @var $ageSegmentationData array */
 
-    $this->title = 'Voter Segmentation By Age and Genders';
+    $this->title = 'Voter Segmentation By Sector';
     $this->params['breadcrumbs'][] = $this->title;
 
 
@@ -162,7 +162,7 @@
                     }
                 },
                 title: {
-                    text: 'Voter Segmentation by Gender',
+                    text: 'Voter Demographics by Gender',
                     align: 'center',
                     style: {
                     fontSize: '24px', // Increased font size for a bigger title
@@ -305,7 +305,7 @@
                     }
                 },
                 title: {
-                    text: 'Voter Segmentation by Gender',
+                    text: 'Voter Demographics by Gender',
                     align: 'center',
                     style: {
                         fontSize: '24px', // Increased font size for a bigger title
