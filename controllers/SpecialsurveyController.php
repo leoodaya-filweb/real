@@ -844,7 +844,7 @@ t.*,
     
         $features = [];
         foreach ($coordinates as $row) {
-            $coords = json_decode($row['coordinates'], true) ?: []; // Ensure it is an array
+            $coords = json_decode($row['coordinates'], true) ?: [];
     
             $colorKey = "criteria" . (int) $criteria . "_color_gray"; // Dynamic key
             $total_gray = $barangay_data[$row['barangay']][$colorKey] ?? 0;
@@ -1140,7 +1140,6 @@ t.*,
     {
         $queryParams = App::queryParams();
     
-        // Determine the criteria based on the incoming query params
         $criteria = $criteria ?: 1; // Default to criteria 1
     
         if ($hs) {
@@ -1470,7 +1469,7 @@ t.*,
     
         // ================== Determine Barangays with Matching Dominant Color ==================
         $barangays = Barangay::find()->all();
-        // After getting the color counts
+     
         $validBarangays = [];
         foreach ($barangays as $barangay) {
             $query = Specialsurvey::find()
@@ -1506,7 +1505,6 @@ t.*,
                 
                 // $color_survey = [1,2,3,4,5];
                 $survey_colors = Specialsurvey::surveyColorReIndex();
-
                 $color_survey = array_keys($survey_colors);
 
             }
@@ -1528,7 +1526,7 @@ t.*,
             }
         }
 
-        // Ensure there's valid data before proceeding
+        // Ensure there's valid data 
         if (empty($validBarangays)) {
             return $this->asJsonNumeric([
                 "type" => "FeatureCollection",
@@ -1537,7 +1535,6 @@ t.*,
             ]);
         }
     
-        // Proceed with the data fetching if valid barangays exist
         $searchModel = new SpecialsurveySearch();
         $dataProvider = $searchModel->searchvoters(['SpecialsurveySearch' => $queryParams]);
         // $dataProvider->query->andWhere(['t.barangay' => $validBarangays]); //Filter only the valid Barangays
@@ -1576,6 +1573,7 @@ t.*,
             "features" => $features,
         ]);
     }
+
     //////////////////////////////////////////////
     
 
@@ -1627,6 +1625,7 @@ t.*,
             'ageSegmentationData' => $ageSegmentationData,
             'colorData' => $colorData
         ]);
+
     }
     
 
@@ -1635,7 +1634,7 @@ t.*,
         $chart_data = [
             ["name" => "Senior", "data" => [0, 3, 2, 4, 6]], 
             ["name" => "PWD", "data" => [1, 2, 3, 1, 2]],
-            ["name" => "Youth", "data" => [4, 5, 6, 3, 2]],
+            ["name" => "Youth", "data" => [4, 0, 0, 3, 2]],
             ["name" => "Women", "data" => [2, 3, 4, 5, 0]],
         ];
         
@@ -1665,7 +1664,7 @@ t.*,
 		if (isset($queryParams['criteria2_color_id'])) {
 			unset($queryParams['criteria2_color_id']);
 			$criteria = $criteria ?: 2;
-		}
+		}   
 		if (isset($queryParams['criteria3_color_id'])) {
 			unset($queryParams['criteria3_color_id']);
 			$criteria = $criteria ?: 3;

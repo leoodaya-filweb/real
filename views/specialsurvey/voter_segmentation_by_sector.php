@@ -61,11 +61,11 @@
 
 
         function renderChart() {
-            let data = {$chart_data_json}; // Ensure this is a JSON array of sector stacks
-            let label = {$barangay_labels_json}; // Color categories
+            let data = {$chart_data_json};
+            let label = {$barangay_labels_json};
 
             var options = {
-                series: data, // Uses stacked sector data
+                series: data,
                 chart: { 
                     type: 'bar', 
                     height: 650, 
@@ -80,8 +80,8 @@
                 plotOptions: { 
                     bar: { 
                         horizontal: false, 
-                        columnWidth: '50%', // Thinner bars for a sleek look
-                        borderRadius: 5, // Rounded corners
+                        columnWidth: '50%', 
+                        borderRadius: 5,
                     } 
                 },
                 stroke: { width: 1, colors: ['#fff'] },
@@ -89,7 +89,7 @@
                     text: 'Voter Segmentation By Sector',
                     align: 'center', 
                     style: { 
-                        fontSize: '26px', // BIG BOLD TITLE
+                        fontSize: '26px', 
                         fontWeight: 'bold',
                         color: '#333' 
                     } 
@@ -128,7 +128,7 @@
                     markers: { radius: 4 },
                     labels: { colors: '#333' }
                 },
-                colors: ['#D72638', '#1B98E0', '#F4A261', '#2E4057'], // Vibrant professional colors
+                colors: ['#D72638', '#1B98E0', '#F4A261', '#2E4057'], 
 
                 dataLabels: {
                     enabled: true,

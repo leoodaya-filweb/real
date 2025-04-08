@@ -25,9 +25,9 @@
 
     foreach ($ageSegmentationData as $item) {
         // Negative values for male counts to make them appear on the left
-        $maleData[] = -(int)($item['male_count'] ?? 0); // Cast to int to avoid any unexpected string behavior
+        $maleData[] = -(int)($item['male_count'] ?? 0); 
         // Positive values for female counts to make them appear on the right
-        $femaleData[] = (int)($item['female_count'] ?? 0); // Cast to int to ensure proper behavior
+        $femaleData[] = (int)($item['female_count'] ?? 0);
     }
 
     $encodedAgeLabels = json_encode($ageRanges);
@@ -46,8 +46,8 @@
             
             renderChart(ageLabels,maleCounts, femaleCounts);
 
-            const maleCount = $encodedMaleData.reduce((acc, val) => acc + Math.abs(val), 0); // Summing absolute male data
-            const femaleCount = $encodedFemaleData.reduce((acc, val) => acc + val, 0); // Summing female data
+            const maleCount = $encodedMaleData.reduce((acc, val) => acc + Math.abs(val), 0); 
+            const femaleCount = $encodedFemaleData.reduce((acc, val) => acc + val, 0);
 
             
             renderDoughnutChart(maleCount,femaleCount);
@@ -92,19 +92,19 @@
                 series: [
                     {
                         name: 'Male',
-                        data: maleCounts // Male data (blue)
+                        data: maleCounts
                     },
                     {
                         name: 'Female',
-                        data: femaleCounts.map(value => Math.abs(value)) // Female data (red)
+                        data: femaleCounts.map(value => Math.abs(value)) 
                     }
                 ],
                 chart: {
                     type: 'bar',
                     height: 440,
-                    stacked: true, // Keep bars stacked
+                    stacked: true, 
                     toolbar: {
-                        show: false // Hide toolbar
+                        show: false 
                     },
                     animations: {
                         enabled: true,
@@ -116,36 +116,36 @@
                         }
                     },
                 },
-                colors: ['#008FFB', '#FF4560'], // Blue for Male, Red for Female
+                colors: ['#008FFB', '#FF4560'], 
                 plotOptions: {
                     bar: {
-                        borderRadius: 12, // Rounded corners for the bars
-                        horizontal: true, // Horizontal bars
-                        barHeight: '80%', // Height adjustment for a sleek look
+                        borderRadius: 12,
+                        horizontal: true, 
+                        barHeight: '80%',
                     },
                 },
                 dataLabels: {
-                    enabled: false // Disable data labels for a cleaner design
+                    enabled: false 
                 },
                 stroke: {
                     width: 1,
-                    colors: ["#fff"] // White border for contrast
+                    colors: ["#fff"]
                 },
                 grid: {
                     xaxis: {
                         lines: {
-                            show: true, // Show grid lines for clarity
-                            borderColor: '#e0e0e0' // Light gray border color
+                            show: true, 
+                            borderColor: '#e0e0e0' 
                         }
                     },
                     yaxis: {
                         lines: {
-                            show: false // Hide horizontal grid lines for a clean look
+                            show: false
                         }
                     }
                 },
                 tooltip: {
-                    shared: false, // Tooltip for each bar individually
+                    shared: false,
                     x: {
                         formatter: function (val) {
                             return val; // Display age range
@@ -153,33 +153,33 @@
                     },
                     y: {
                         formatter: function (val) {
-                            return Math.abs(val) + " voters"; // Display absolute value as "voters"
+                            return Math.abs(val) + " voters"; 
                         }
                     },
                     style: {
                         fontSize: '14px',
-                        fontFamily: 'Roboto, Helvetica, sans-serif', // Modern font family
+                        fontFamily: 'Roboto, Helvetica, sans-serif',
                         fontWeight: 'bold',
-                        background: '#fff', // White background for tooltips
-                        borderRadius: '8px', // Rounded corners for tooltips
-                        boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)' // Light shadow for tooltips
+                        background: '#fff',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)'
                     }
                 },
                 title: {
                     text: 'Voter Segmentation by Gender',
                     align: 'center',
                     style: {
-                    fontSize: '24px', // Increased font size for a bigger title
+                    fontSize: '24px', 
                     fontWeight: 'bold',
                     fontFamily: 'Roboto, Helvetica, sans-serif',
-                    color: '#333', // Dark color for title text
-                    letterSpacing: '1px', // Increased spacing between letters for better readability
+                    color: '#333',
+                    letterSpacing: '1px',
                     },
-                    offsetY: -10, // Added vertical offset
-                    offsetX: 10  // Added horizontal offset
+                    offsetY: -10, 
+                    offsetX: 10 
                 },
                 xaxis: {
-                    categories: ageLabels, // Dynamically set labels based on age ranges
+                    categories: ageLabels,
                     title: {
                         text: 'Number of Voters',
                         style: {
@@ -199,7 +199,7 @@
                             color: '#333'
                         }
                     },
-                    offsetY: 10, // Add space between X-axis title and X-axis labels
+                    offsetY: 10, 
                     axisBorder: {
                         show: true,
                         color: '#333',
@@ -215,8 +215,8 @@
                             fontWeight: 600,
                             fontFamily: 'Roboto, Helvetica, sans-serif'
                         },
-                        offsetX: 10, // Add horizontal padding
-                        offsetY: 10  // Add vertical padding
+                        offsetX: 10,
+                        offsetY: 10
                     },
                     labels: {
                         style: {
@@ -225,18 +225,18 @@
                             color: '#333'
                         }
                     },
-                    offsetX: 10, // Adding space between Y-axis title and Y-axis labels
+                    offsetX: 10, 
                 },
                 legend: {
-                    position: 'top', // Move the legend to the top
-                    horizontalAlign: 'center', // Align the legend horizontally at the top
+                    position: 'top',
+                    horizontalAlign: 'center',
                     fontSize: '20px',
                     fontFamily: 'Roboto, Helvetica, sans-serif',
                     labels: {
                     useSeriesColors: true
                     },
-                    offsetY: -20, // Add vertical padding
-                    offsetX: 10  // Add horizontal padding
+                    offsetY: -20, 
+                    offsetX: 10 
                 },
                 responsive: [{
                     breakpoint: 768,
@@ -284,14 +284,14 @@
                 plotOptions: {
                     pie: {
                         donut: {
-                            size: '60%', // Size of the doughnut hole
+                            size: '60%', 
                         }
                     }
                 },
                 dataLabels: {
                     enabled: true,
                     formatter: function (val) {
-                        return val.toFixed(2) + "%"; // Show percentage with 2 decimals
+                        return val.toFixed(2) + "%"; 
                     },
                     style: {
                         fontSize: '16px',
@@ -304,7 +304,7 @@
                     shared: true,
                     y: {
                         formatter: function (val) {
-                            return val.toFixed(2) + "%"; // Tooltip with percentage
+                            return val.toFixed(2) + "%";
                         }
                     }
                 },
@@ -312,17 +312,17 @@
                     text: 'Voter Segmentation by Gender',
                     align: 'center',
                     style: {
-                        fontSize: '24px', // Increased font size for a bigger title
+                        fontSize: '24px', 
                         fontWeight: 'bold',
                         fontFamily: 'Roboto, Helvetica, sans-serif',
-                        color: '#333', // Dark color for title text
-                        letterSpacing: '1px', // Increased spacing between letters for better readability
+                        color: '#333',
+                        letterSpacing: '1px', 
                     },
                     offsetY: -5 
                 },
                 legend: {
-                    position: 'bottom', // Legend position
-                    horizontalAlign: 'center', // Center the legend items
+                    position: 'bottom', 
+                    horizontalAlign: 'center', 
                     floating: false
                 }
             };
