@@ -19,8 +19,8 @@ use yii\web\View;
 /* @var $searchModel app\models\search\SpecialsurveySearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
- $searchModel->searchTemplate = 'specialsurvey/_search_voters';     
- $searchModel->searchAction = ['specialsurvey/voter-social-assistance-beneficiaries'];
+ $searchModel->searchTemplate = 'specialsurvey/_search_voters';
+ $searchModel->searchAction = ['specialsurvey/specialsurvey/voter-social-assistance-beneficiaries'];
 
 
 $this->title = 'Social Assistance Beneficiaries';
@@ -273,7 +273,7 @@ CSS, ['type' => "text/css"]);
            
                  
                  //Barangay label
-                   const datasourcebgryUrl = app.baseUrl + 'specialsurvey/population-coordinates?brgy=1';
+                   const datasourcebgryUrl = app.baseUrl + 'specialsurvey/population-coordinates2?brgy=1';
                  
                     map.addSource('brgylabel', {
                       type: 'geojson',
@@ -307,7 +307,7 @@ CSS, ['type' => "text/css"]);
                  
                    //Voters
                  
-                   const datasourceUrl = app.baseUrl + 'specialsurvey/population-coordinates?barangay={$searchModel->barangay}&purok={$searchModel->purok}&color_survey={$searchModel->color_survey}&criteria={$searchModel->criteria}&survey_name={$searchModel->survey_name}&keywords={$searchModel->keywords}';
+                   const datasourceUrl = app.baseUrl + 'specialsurvey/population-coordinates2?barangay={$searchModel->barangay}&purok={$searchModel->purok}&color_survey={$searchModel->color_survey}&criteria={$searchModel->criteria}&survey_name={$searchModel->survey_name}&keywords={$searchModel->keywords}';
               
                     map.addSource('voters', {
                       type: 'geojson',
@@ -325,20 +325,15 @@ CSS, ['type' => "text/css"]);
                         },
                        //'circle-color': '#1CC5BD'
                         'circle-color': [
-                        'match',
-                        ['get', 'criteria1_color_id'],
-                        1,
-                        '#5096f2', // Blue
-                        2,
-                        '#e4e6ef', // Gray
-                        3,
-                        '#000000', // Blackx
-                        4,
-                        '#404040', // Blacky
-                        5,
-                        '#808080', // Blacku
-                        /* other */ '#F64E60'
-                    ]
+                            'match',
+                            ['get', 'criteria1_color_id'],
+                            1, ['case', ['==', ['get', 'leader'], 1], '#ADD8E6', '#5096f2'], // Blue
+                            2, '#e4e6ef', // Gray
+                            3, '#000000', // Blackx
+                            4, '#404040', // Blacky
+                            5, '#808080', // Blacku
+                            /* other */ '#F64E60' // Default
+                        ]
                      },
                       source: 'voters'
                       }, 'aeroway-polygon');
@@ -410,7 +405,7 @@ CSS, ['type' => "text/css"]);
                        
                        
                        
-                    const dataUrl = app.baseUrl + 'specialsurvey/barangay-coordinates';
+                    const dataUrl = app.baseUrl + 'specialsurvey/barangay-coordinates1';
                     const changePaint = (url) => {
                         $.ajax({
                             url,
@@ -528,7 +523,7 @@ CSS, ['type' => "text/css"]);
                         //console.log(color_survey);
                         
                         
-                         const datasourceUrl2 = app.baseUrl + 'specialsurvey/population-coordinates?barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
+                         const datasourceUrl2 = app.baseUrl + 'specialsurvey/population-coordinates2?barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
                          map.getSource('voters').setData(datasourceUrl2);
 
                          changePaint(dataUrl + '?barangay='+barangay+'&criteria=' + criteria + '&survey_name=' + (survey_name || '')+ '&date_range=' + date_survey+'&color_survey='+color_survey+'&purok='+purok);
@@ -676,19 +671,16 @@ CSS, ['type' => "text/css"]);
  <div class="mt-10"></div>
  
 
-    <div id="content-graph">
-       <?= $this->render('voter_barangay_graph',[]) ?>
-    </div>
-      
+ 
 
 
  
-    <!-- <div id="content-listingX">
+    <div id="content-listing">
       
    
     </div>
     
-     -->
+    
     
 </div>
 

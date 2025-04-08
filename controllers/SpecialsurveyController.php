@@ -996,9 +996,9 @@ t.*,
             $colorNames = [
                 1 => 'Blue voters',
                 2 => 'Gray voters',
-                3 => 'Blackx voters',
-                4 => 'Blacky voters',
-                5 => 'Blacku voters'
+                3 => 'BlackX voters',
+                4 => 'BlackY voters',
+                5 => 'BlackU voters'
             ];
     
             // Add color data to display in chart
@@ -1627,9 +1627,23 @@ t.*,
     }
     
 
-    public function actionVoterSegmentationBySector(){
+    public function actionVoterSegmentationBySector($barangay = null, $purok = null, $criteria = null){
+        
+        $chart_data = [
+            ["name" => "Senior", "data" => [5, 3, 2, 4, 6]], 
+            ["name" => "PWD", "data" => [1, 2, 3, 1, 2]],
+            ["name" => "Youth", "data" => [4, 5, 6, 3, 2]],
+            ["name" => "Women", "data" => [2, 3, 4, 5, 6]],
+        ];
+        
+        $barangay_labels = ["Blue", "BlackX", "BlackY", "BlackU", "Gray"];
+        $chart_data_json = json_encode($chart_data);
+        $barangay_labels_json = json_encode($barangay_labels);
 
-        return $this->render('voter_segmentation_by_sector');
+        return $this->render('voter_segmentation_by_sector',[
+            'chart_data_json' => $chart_data_json,
+            'barangay_labels_json' => $barangay_labels_json,
+        ]);
     }
 
     public function actionVoterSocialAssistanceBeneficiaries($criteria= null){

@@ -25,11 +25,10 @@
     $this->params['createTitle'] = 'Create Survey';
 
   
-
     $this->registerJs(<<<JS
          
         $(document).ready(function () {
-           
+            renderChart();
           
 
             $('.filter-select').change(function () {
@@ -44,7 +43,7 @@
                 $.ajax({
                     url: '/real/web/specialsurvey/voter-segmentation-by-sector',
                     method: 'get',
-                    data: { barangay, purok, criteria, color },
+                    data: { barangay, purok, criteria },
                     success: function (response) {
                         
                         
@@ -60,184 +59,95 @@
             });
         });
 
-        function renderChart(ageLabels, maleCounts, femaleCounts) {
+
+        function renderChart() {
+            let data = {$chart_data_json}; // Ensure this is a JSON array of sector stacks
+            let label = {$barangay_labels_json}; // Color categories
+
             var options = {
-                series: [
-                    {
-                        name: 'Male',
-                        data: maleCounts // Male data (blue)
-                    },
-                    {
-                        name: 'Female',
-                        data: femaleCounts.map(value => Math.abs(value)) // Female data (red)
-                    }
-                ],
-                chart: {
-                    type: 'bar',
-                    height: 440,
-                    stacked: true, // Keep bars stacked
-                    toolbar: {
-                        show: false // Hide toolbar
-                    },
+                series: data, // Uses stacked sector data
+                chart: { 
+                    type: 'bar', 
+                    height: 650, 
+                    stacked: true,
+                    toolbar: { show: false }, 
                     animations: {
                         enabled: true,
                         easing: 'easeinout',
-                        speed: 1000,
-                        animateGradually: {
-                            enabled: true,
-                            delay: 200
-                        }
-                    },
-                },
-                colors: ['#008FFB', '#FF4560'], // Blue for Male, Red for Female
-                plotOptions: {
-                    bar: {
-                        borderRadius: 12, // Rounded corners for the bars
-                        horizontal: true, // Horizontal bars
-                        barHeight: '80%', // Height adjustment for a sleek look
-                    },
-                },
-                dataLabels: {
-                    enabled: false // Disable data labels for a cleaner design
-                },
-                stroke: {
-                    width: 1,
-                    colors: ["#fff"] // White border for contrast
-                },
-                grid: {
-                    xaxis: {
-                        lines: {
-                            show: true, // Show grid lines for clarity
-                            borderColor: '#e0e0e0' // Light gray border color
-                        }
-                    },
-                    yaxis: {
-                        lines: {
-                            show: false // Hide horizontal grid lines for a clean look
-                        }
+                        speed: 800
                     }
                 },
-                tooltip: {
-                    shared: false, // Tooltip for each bar individually
-                    x: {
-                        formatter: function (val) {
-                            return val; // Display age range
-                        }
-                    },
-                    y: {
-                        formatter: function (val) {
-                            return Math.abs(val) + " voters"; // Display absolute value as "voters"
-                        }
-                    },
-                    style: {
-                        fontSize: '14px',
-                        fontFamily: 'Roboto, Helvetica, sans-serif', // Modern font family
+                plotOptions: { 
+                    bar: { 
+                        horizontal: false, 
+                        columnWidth: '50%', // Makes bars thinner for a sleek look
+                        borderRadius: 5, // Adds rounded corners for modern design
+                    } 
+                },
+                stroke: { width: 1, colors: ['#fff'] },
+                title: { 
+                    text: 'Voter Segmentation By Sector',
+                    align: 'center', 
+                    style: { 
+                        fontSize: '26px', // BIGGER title
                         fontWeight: 'bold',
-                        background: '#fff', // White background for tooltips
-                        borderRadius: '8px', // Rounded corners for tooltips
-                        boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)' // Light shadow for tooltips
+                        color: '#333' // Dark gray for a professional look
+                    } 
+                },
+                subtitle: {
+                    text: '{$chartTitle}', // Secondary title (optional)
+                    align: 'center',
+                    margin: 10,
+                    offsetY: 10,
+                    style: {
+                        fontSize: '18px',
+                        fontWeight: 'bold',
+                        color: '#555'
                     }
                 },
-                title: {
-                    text: 'Voter Demographics by Gender',
-                    align: 'center',
-                    style: {
-                    fontSize: '24px', // Increased font size for a bigger title
-                    fontWeight: 'bold',
-                    fontFamily: 'Roboto, Helvetica, sans-serif',
-                    color: '#333', // Dark color for title text
-                    letterSpacing: '1px', // Increased spacing between letters for better readability
+                xaxis: { 
+                    categories: label,
+                    labels: { 
+                        style: { fontSize: '14px', fontWeight: 'bold', colors: '#333' } 
                     },
-                    offsetY: -10, // Added vertical offset
-                    offsetX: 10  // Added horizontal offset
-                },
-                xaxis: {
-                    categories: ageLabels, // Dynamically set labels based on age ranges
-                    title: {
-                        text: 'Number of Voters',
-                        style: {
-                            color: '#333',
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            fontFamily: 'Roboto, Helvetica, sans-serif'
-                        }
-                    },
-                    labels: {
-                        formatter: function (val) {
-                            return Math.abs(Math.round(val)); // Show rounded values
-                        },
-                        style: {
-                            fontSize: '12px',
-                            fontFamily: 'Roboto, Helvetica, sans-serif',
-                            color: '#333'
-                        }
-                    },
-                    offsetY: 10, // Add space between X-axis title and X-axis labels
-                    axisBorder: {
-                        show: true,
-                        color: '#333',
-                        height: 2,
-                    },
+                    axisBorder: { show: true, color: '#ddd' },
+                    axisTicks: { show: true, color: '#ddd' }
                 },
                 yaxis: {
-                    title: {
-                        text: 'Age Group',
-                        style: {
-                            color: '#333',
-                            fontSize: '14px',
-                            fontWeight: 600,
-                            fontFamily: 'Roboto, Helvetica, sans-serif'
-                        },
-                        offsetX: 10, // Add horizontal padding
-                        offsetY: 10  // Add vertical padding
+                    labels: { 
+                        style: { fontSize: '13px', colors: '#555' },
+                        formatter: function (val) { return val.toLocaleString(); } // Formats numbers with commas
                     },
-                    labels: {
-                        style: {
-                            fontSize: '12px',
-                            fontFamily: 'Roboto, Helvetica, sans-serif',
-                            color: '#333'
-                        }
-                    },
-                    offsetX: 10, // Adding space between Y-axis title and Y-axis labels
-                },
-                legend: {
-                    position: 'top', // Move the legend to the top
-                    horizontalAlign: 'center', // Align the legend horizontally at the top
-                    fontSize: '20px',
-                    fontFamily: 'Roboto, Helvetica, sans-serif',
-                    labels: {
-                    useSeriesColors: true
-                    },
-                    offsetY: -20, // Add vertical padding
-                    offsetX: 10  // Add horizontal padding
-                },
-                responsive: [{
-                    breakpoint: 768,
-                    options: {
-                        chart: {
-                            height: 400
-                        },
-                        xaxis: {
-                            labels: {
-                                fontSize: '10px'
-                            }
-                        },
-                        yaxis: {
-                            labels: {
-                                fontSize: '10px'
-                            }
-                        },
-                        legend: {
-                            position: 'bottom', // Move the legend to the bottom on smaller screens
-                        }
+                    title: { 
+                        text: 'Number of Voters',
+                        style: { fontSize: '16px', fontWeight: 'bold', color: '#333' }
                     }
-                }]
+                },
+                tooltip: { 
+                    theme: 'dark', 
+                    y: { formatter: function (val) { return val + " Voters"; } } 
+                },
+                fill: { opacity: 0.9 }, // Slight transparency for a polished look
+                grid: {
+                    borderColor: '#e0e0e0', // Light gray grid lines
+                    strokeDashArray: 4, // Subtle dashed lines
+                    padding: { left: 10, right: 10, top: 20, bottom: 20 }
+                },
+                legend: { 
+                    position: 'top', 
+                    horizontalAlign: 'right',
+                    fontSize: '14px',
+                    markers: { radius: 4 },
+                    labels: { colors: '#333' }
+                },
+                colors: ['#D72638', '#1B98E0', '#F4A261', '#2E4057'], // Vibrant professional colors
             };
 
-            document.querySelector("#ageSegmentationChart").innerHTML = "";
-            var chart = new ApexCharts(document.querySelector("#ageSegmentationChart"), options);
+            var chart = new ApexCharts(document.querySelector("#sectorSegmentationChart"), options);
             chart.render();
         }
+
+
 
         
 
@@ -288,16 +198,7 @@
                 </select>
             </div>
 
-            <div class="ml-5">
-                <select class="form-control filter-select" id="color-select">
-                    <option value="" selected>All Colors</option>
-                    <?php foreach ($colorData as $id => $name): ?>
-                       
-                            <option value="<?= $id ?>"><?= $name ?></option>
-                      
-                    <?php endforeach; ?>
-                </select>
-            </div>
+          
         </div>
     </section>
 
