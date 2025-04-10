@@ -53,29 +53,43 @@
             renderDoughnutChart(maleCount,femaleCount);
 
             $('.filter-select').change(function () {
-
                 var barangay = $('#select-barangay').val();
-                var purok = $('#select-purok').val();
                 var criteria = $('#select-criteria').val();
                 var color = $('#color-select').val();
 
-              
+                // Only store the selected purok IF the barangay hasn't changed
+                var selectedPurok = $('#select-purok').val();
+                if ($(this).attr('id') === 'select-barangay') {
+                    selectedPurok = ""; // Reset purok if barangay changes
+                }
 
                 $.ajax({
                     url: '/real/web/specialsurvey/voter-segmentation-by-age-and-genders',
                     method: 'get',
-                    data: { barangay, purok, criteria, color },
+                    data: { barangay, purok: selectedPurok, criteria, color },
                     success: function (response) {
-                        
-                        
-                        // Process Age Segmentation Data
                         let ageLabels = response.ageSegmentationData.map(item => item.age_range);
-                        let maleCounts = response.ageSegmentationData.map(item => -parseInt(item.male_count || 0)); // Negative for left
-                        let femaleCounts = response.ageSegmentationData.map(item => parseInt(item.female_count || 0)); // Positive for right
+                        let maleCounts = response.ageSegmentationData.map(item => -parseInt(item.male_count || 0));
+                        let femaleCounts = response.ageSegmentationData.map(item => parseInt(item.female_count || 0));
 
-                        // Process Gender Distribution
                         let totalMale = Math.abs(maleCounts.reduce((a, b) => a + b, 0));
                         let totalFemale = femaleCounts.reduce((a, b) => a + b, 0);
+
+                        // ✅ Reset purok dropdown
+                        $("#select-purok").html('<option value="" selected>Select..</option>');
+
+                        let purokExists = false; // Track if previous purok exists in new list
+
+                        $.each(response.purok, function (key, value) {
+                            let isSelected = selectedPurok === value.purok ? 'selected' : '';
+                            if (isSelected) purokExists = true;
+                            $("#select-purok").append('<option value="' + value.purok + '" ' + isSelected + '>' + value.purok + '</option>');
+                        });
+
+                        // ✅ Reset selection if old purok doesn't exist in new barangay
+                        if (!purokExists) {
+                            $("#select-purok").val(""); // Reset to "Select.."
+                        }
 
                         renderChart(ageLabels, maleCounts, femaleCounts);
                         renderDoughnutChart(totalMale, totalFemale);
@@ -85,6 +99,9 @@
                     }
                 });
             });
+
+
+
         });
 
         function renderChart(ageLabels, maleCounts, femaleCounts) {

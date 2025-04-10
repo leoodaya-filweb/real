@@ -990,11 +990,20 @@ t.*,
                 'queryParams' => $queryParams,
             ]);
         }
-    
+
+        $purok=[];
+        if($searchModel->barangay){
+            $purok = Specialsurvey::find()->select(['purok'])->andWhere("purok is not null and purok not in('','-','0') ")->andFilterWhere(['barangay'=>$searchModel->barangay])->groupBy("purok")->orderby(['purok'=>SORT_ASC])->asArray()->all();
+        }
+
+
+
+		
         return $this->asJson([
             "type" => "FeatureCollection",
             "features" => $features,
             "output" => $output,
+            "purok"=>$purok,
             "queryParams" => $queryParams,
         ]);
     }
@@ -1771,45 +1780,55 @@ t.*,
         $criteria = $criteria ?? 1;
 
         $ageSegmentationData = Specialsurvey::find()
-            ->select([
-                'age_range' => new \yii\db\Expression("CASE
-                    WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) >= 60 THEN '60+'
-                    WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 55 AND 59 THEN '55-59'
-                    WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 45 AND 54 THEN '45-54'
-                    WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 35 AND 44 THEN '35-44'
-                    WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 25 AND 34 THEN '25-34'
-                    WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 18 AND 24 THEN '18-24'
-                    ELSE '0'
-                END"),
-                'male_count' => new \yii\db\Expression('SUM(CASE WHEN gender = "Male" THEN 1 ELSE 0 END)'),
-                'female_count' => new \yii\db\Expression('SUM(CASE WHEN gender = "Female" THEN 1 ELSE 0 END)')
-            ])
-            ->groupBy('age_range')
-            ->filterWhere([
-                'barangay' => $barangay,
-                'purok' => $purok,
-                'criteria' . $criteria . '_color_id' => $color
-            ])
-            ->asArray()
-            ->all();
+        ->select([
+            'age_range' => new \yii\db\Expression("CASE
+                WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) >= 60 THEN '60+'
+                WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 55 AND 59 THEN '55-59'
+                WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 45 AND 54 THEN '45-54'
+                WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 35 AND 44 THEN '35-44'
+                WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 25 AND 34 THEN '25-34'
+                WHEN TIMESTAMPDIFF(YEAR, date_of_birth, CURDATE()) BETWEEN 18 AND 24 THEN '18-24'
+                ELSE '0'
+            END"),
+            'male_count' => new \yii\db\Expression('SUM(CASE WHEN gender = "Male" THEN 1 ELSE 0 END)'),
+            'female_count' => new \yii\db\Expression('SUM(CASE WHEN gender = "Female" THEN 1 ELSE 0 END)')
+        ])
+        ->groupBy('age_range')
+        ->filterWhere([
+            'barangay' => $barangay,
+            'purok' => $purok,
+            'criteria' . $criteria . '_color_id' => $color
+        ])
+        ->asArray()
+        ->all();
 
-            $survey_colors = Specialsurvey::surveyColorReIndex();
-            $colorData = [];
+        $survey_colors = Specialsurvey::surveyColorReIndex();
+        $colorData = [];
 
-            foreach ($survey_colors as $key => $color) {
-                $colorData[$key] = $color['label'] . ' voters';
-            }
+        foreach ($survey_colors as $key => $color) {
+            $colorData[$key] = $color['label'] . ' voters';
+        }
+
+
+        $purok=[];
+        if($barangay){
+            $purok = Specialsurvey::find()->select(['purok'])->andWhere("purok is not null and purok not in('','-','0') ")->andFilterWhere(['barangay'=>$barangay])->groupBy("purok")->orderby(['purok'=>SORT_ASC])->asArray()->all();
+        }
 
         if (Yii::$app->request->isAjax) {
             return $this->asJson([
                 'ageSegmentationData' => $ageSegmentationData,
+                'purok' =>  $purok,
                 'colorData' => $colorData
             ]);
         }
+
+       
         return $this->render('voter_segmentation_by_age_gender', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
             'ageSegmentationData' => $ageSegmentationData,
+            
             'colorData' => $colorData
         ]);
 
