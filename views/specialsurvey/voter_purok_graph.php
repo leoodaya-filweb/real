@@ -20,26 +20,28 @@ $barangay_name=$row['barangay'];
         if($color_survey){
          $color_survey = explode(',', $color_survey);
         }
+$surveyColors = Specialsurvey::surveyColorReIndex();
+
+$colorColumns = [];
+foreach ($surveyColors as $color) {
+  $colorColumns[] = "sum(t.criteria{$criteria}_color_id={$color['id']}) as {$color['label']}";
+}
+
+$colorColumnsSql = implode(', ', $colorColumns);
 
 $barangay = Specialsurvey::find()->alias('t')
-            ->select(['t.purok, 
-            sum(t.criteria'.$criteria.'_color_id=1) as Black, 
-            sum(t.criteria'.$criteria.'_color_id=2) as Gray,
-            sum(t.criteria'.$criteria.'_color_id=3) as Green,
-            sum(t.criteria'.$criteria.'_color_id=4) as Red
-            '])
-           ->where(['t.barangay'=>$barangay_name])
-           ->andWhere("t.purok not in ('','0','-',' - ','\\\')")
-            ->andFilterWhere([
-                't.survey_name'=>$queryParams['survey_name'],
-                't.purok'=>$queryParams['purok'],
-                't.criteria'.$criteria.'_color_id' => $color_survey
-            ])
-           ->groupBy("trim(t.purok)")
-           ->orderBy(["t.purok"=>SORT_ASC])
-           ->asArray()
-        ->all();
-        
+  ->select(["t.purok, {$colorColumnsSql}"])
+  ->where(['t.barangay' => $barangay_name])
+  ->andWhere("t.purok not in ('','0','-',' - ','\\\')")
+  ->andFilterWhere([
+    't.survey_name' => $queryParams['survey_name'],
+    't.purok' => $queryParams['purok'],
+    't.criteria' . $criteria . '_color_id' => $color_survey
+  ])
+  ->groupBy("trim(t.purok)")
+  ->orderBy(["t.purok" => SORT_ASC])
+  ->asArray()
+  ->all();
         
 //print_r($barangay);  
 
@@ -72,10 +74,6 @@ $widgetFunction='purok'.$id;
 $this->registerWidgetJs($widgetFunction, <<< JS
 
    
-    const black = '#181c32';
-	const gray = '#e4e6ef';
-	const green = '#1bc5bd';
-	const red = '#f64e60';
    
     let data = {$data};
     let label = {$barangay_label};
@@ -127,7 +125,7 @@ $this->registerWidgetJs($widgetFunction, <<< JS
           horizontalAlign: 'left',
           offsetX: 40
         },
-        colors: [black, gray, green, red]
+        colors: ["#5096f2", "#e4e6ef", "#000000", "#404040", "#808080"]
         };
 
         var chart = new ApexCharts(document.querySelector("#chart-purok{$id}"), options);

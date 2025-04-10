@@ -18,25 +18,26 @@ $criteria=!$criteria?1:$criteria;
          $color_survey = explode(',', $color_survey);
         }
 
+$surveyColors = Specialsurvey::surveyColorReIndex();
+
+
 $barangay = Specialsurvey::find()->alias('t')
-            ->select(['t.barangay, 
-            sum(t.criteria'.$criteria.'_color_id=1) as Black, 
-            sum(t.criteria'.$criteria.'_color_id=2) as Gray,
-            sum(t.criteria'.$criteria.'_color_id=3) as Green,
-            sum(t.criteria'.$criteria.'_color_id=4) as Red
-            '])
-           // ->where(['household_no'=>$hs])
-            ->andFilterWhere([
-                't.survey_name'=>$queryParams['survey_name'],
-                't.barangay'=>$queryParams['barangay'],
-                't.purok'=>$queryParams['purok'],
-                't.criteria'.$criteria.'_color_id' => $color_survey
-            ])
-           ->groupBy("t.barangay")
-           ->orderBy(["t.barangay"=>SORT_ASC])
-           ->asArray()
-        ->all();
-        
+  ->select(array_merge(
+    ['t.barangay'],
+    array_map(function ($color) use ($criteria) {
+      return "sum(t.criteria{$criteria}_color_id={$color['id']}) as {$color['label']}";
+    }, $surveyColors)
+  ))
+  ->andFilterWhere([
+    't.survey_name' => $queryParams['survey_name'],
+    't.barangay' => $queryParams['barangay'],
+    't.purok' => $queryParams['purok'],
+    't.criteria' . $criteria . '_color_id' => $color_survey
+  ])
+  ->groupBy("t.barangay")
+  ->orderBy(["t.barangay" => SORT_ASC])
+  ->asArray()
+  ->all();
         
 //print_r($barangay);  
 
@@ -66,12 +67,6 @@ $data=[];
 
 $widgetFunction='brgygraph';
 $this->registerWidgetJs($widgetFunction, <<< JS
-
-	const black = '#181c32';
-	const gray = '#e4e6ef';
-	const green = '#1bc5bd';
-	const red = '#f64e60';
-
 
 
     let data = {$data};
@@ -126,7 +121,7 @@ $this->registerWidgetJs($widgetFunction, <<< JS
           horizontalAlign: 'left',
           offsetX: 40
         },
-        colors: [black, gray, green, red]
+        colors: ["#5096f2", "#e4e6ef", "#000000", "#404040", "#808080"]
         };
 
         var chart = new ApexCharts(document.querySelector("#chart-barangy"), options);
