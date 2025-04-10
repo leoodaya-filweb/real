@@ -380,7 +380,8 @@ CSS, ['type' => "text/css"]);
                            const total_voters = e.features[0].properties.total_voters;
                            const householdNo = e.features[0].properties.household_no;
                            const color = e.features[0].properties.color_label;
-                           const content='<div id="voters'+householdNo+'" style="min-height: 200px; width: 230px; font-size: 11px;"><div><strong>'+votersName+' Family</strong><br/>HS No.: '+householdNo+'</div><br/>Total Voters: '+total_voters+'<br/>Color: '+color+'<div class="voters">Loading..</div></div>';
+                           const content='<div id="voters'+householdNo+'" style="min-height: 200px; width: 230px; font-size: 11px;"><div><strong>'+votersName+' Family</strong><br/><div class="voters">Loading..</div></div>';
+                            //    console.log(e.features[0].properties);
                            
                             // Ensure that if the map is zoomed out such that multiple
                             // copies of the feature are visible, the popup appears
@@ -404,7 +405,7 @@ CSS, ['type' => "text/css"]);
                                         return $(this).val();
                                         }).get();
                                    
-                                   const voterslisUrl = app.baseUrl + 'specialsurvey/population-coordinates?hs='+householdNo+'&barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
+                                   const voterslisUrl = app.baseUrl + 'specialsurvey/population-coordinates2?hs='+householdNo+'&barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
                                    $.ajax({
                                        url: voterslisUrl,
                                        method: 'get',
@@ -417,6 +418,22 @@ CSS, ['type' => "text/css"]);
                                            }
                                        
                                    });
+
+                                   const urllist = app.baseUrl + 'specialsurvey/?barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok+'&household_no='+householdNo;
+                        
+                                    $.ajax({
+                                        url: urllist,
+                                        method: 'get',
+                                        dataType: 'html',
+                                        success: (s) => {
+                                            //console.log(s);
+                                        $('#content-listing').html(s);   
+                                        },
+                                        error: (e) => {
+                                            console.log('e', e)
+                                        
+                                        }
+                                    });
                                    
                                    
                                    
