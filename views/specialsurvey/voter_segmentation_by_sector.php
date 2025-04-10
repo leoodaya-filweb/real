@@ -28,29 +28,47 @@
     $this->registerJs(<<<JS
          
         $(document).ready(function () {
-            renderChart();
+            renderChart({$chart_data_json},{$color_labels_json});
           
+            
+            
 
             $('.filter-select').change(function () {
-
                 var barangay = $('#select-barangay').val();
-                var purok = $('#select-purok').val();
                 var criteria = $('#select-criteria').val();
-               
+                var color = $('#color-select').val();
 
-              
+                var selectedPurok = $('#select-purok').val();
+                if ($(this).attr('id') === 'select-barangay') {
+                    selectedPurok = ""; // Reset purok if barangay changes
+                }
 
                 $.ajax({
                     url: '/real/web/specialsurvey/voter-segmentation-by-sector',
                     method: 'get',
-                    data: { barangay, purok, criteria },
+                    data: { barangay, purok: selectedPurok, criteria, color },
                     success: function (response) {
-                        
-                        
-                        console.log(response);
-                        
-                        // renderChart(ageLabels, maleCounts, femaleCounts);
-                        // renderDoughnutChart(totalMale, totalFemale);
+                    const data = JSON.parse(response.chart_data_json);
+                    const label = JSON.parse(response.color_labels_json);
+                    renderChart(data, label);
+
+
+                        $("#select-purok").html('<option value="" selected>Select..</option>');
+
+                        let purokExists = false;
+
+                        $.each(response.purok, function (key, value) {
+                            let isSelected = selectedPurok === value.purok ? 'selected' : '';
+                            if (isSelected) purokExists = true;
+                            $("#select-purok").append('<option value="' + value.purok + '" ' + isSelected + '>' + value.purok + '</option>');
+                        });
+
+                       
+                        if (!purokExists) {
+                            $("#select-purok").val(""); // Reset to "Select.."
+                        }
+
+                       
                     },
                     error: function (e) {
                         console.log('AJAX error', e);
@@ -60,10 +78,12 @@
         });
 
 
-        function renderChart() {
-            let data = {$chart_data_json};
-            let label = {$barangay_labels_json};
+        function renderChart(chart_data_json, color_labels_json) {
+            let data = chart_data_json;
+            let label = color_labels_json;
 
+          
+            
             var options = {
                 series: data,
                 chart: { 
@@ -138,6 +158,8 @@
                     }
                 }
             };
+
+            document.querySelector("#sectorSegmentationChart").innerHTML = "";
 
             var chart = new ApexCharts(document.querySelector("#sectorSegmentationChart"), options);
             chart.render();

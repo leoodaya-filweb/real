@@ -1835,25 +1835,107 @@ t.*,
     }
     
 
-    public function actionVoterSegmentationBySector($barangay = null, $purok = null, $criteria = null){
-        
-        $chart_data = [
-            ["name" => "Senior", "data" => [0, 3, 2, 4, 6]], 
-            ["name" => "PWD", "data" => [1, 2, 3, 1, 2]],
-            ["name" => "Youth", "data" => [4, 0, 0, 3, 2]],
-            ["name" => "Women", "data" => [2, 3, 4, 5, 0]],
-        ];
-        
+    public function actionVoterSegmentationBySector($barangay = null, $purok = null, $criteria = null)
+    {
+        $criteria = $criteria ?? 1;
+    
         $survey_colors = Specialsurvey::surveyColorReIndex();
-        $barangay_labels = array_column($survey_colors, 'label');
-        $chart_data_json = json_encode($chart_data);
-        $barangay_labels_json = json_encode($barangay_labels);
-
-        return $this->render('voter_segmentation_by_sector',[
+        $color_count = count($survey_colors); // Get the total number of colors
+        $color_labels = array_column($survey_colors, 'label'); // Get the color labels
+    
+        $query = (new \yii\db\Query())
+            ->select([
+                's.criteria' . $criteria . '_color_id',
+                'SUM(CASE WHEN m.senior_citizen_id = 1 THEN 1 ELSE 0 END) AS Senior',
+                'SUM(CASE WHEN m.pwd = 1 THEN 1 ELSE 0 END) AS PWD',
+                // 'SUM(CASE WHEN m.sex = 2 THEN 1 ELSE 0 END) AS Women',
+                // 'SUM(CASE WHEN TIMESTAMPDIFF(YEAR, m.birth_date, CURDATE()) BETWEEN 15 AND 30 THEN 1 ELSE 0 END) AS Youth'
+            ])
+            ->from('tbl_specialsurvey s')
+            ->leftJoin('tbl_members m', 'm.last_name = s.last_name AND m.first_name = s.first_name AND m.middle_name = s.middle_name')
+            ->where(['or',
+                ['m.pwd' => 1],
+                ['m.senior_citizen_id' => 1],
+                ['m.sex' => 2],
+                ['between', 'TIMESTAMPDIFF(YEAR, m.birth_date, CURDATE())', 15, 30]
+            ])
+            ->andFilterWhere([
+                's.barangay' => $barangay,
+                's.purok' => $purok,
+            ])
+            ->groupBy('s.criteria' . $criteria . '_color_id')
+            ->orderBy('s.criteria' . $criteria . '_color_id')
+            ->all();
+    
+        $chart_data = [
+            "Senior" => array_fill(0, $color_count, 0),
+            "PWD" => array_fill(0, $color_count, 0),
+            // "Women" => array_fill(0, $color_count, 0),
+            // "Youth" => array_fill(0, $color_count, 0),
+        ];
+    
+        // Populate chart data from the query result
+        foreach ($query as $row) {
+            // Get the color index from the criteria color ID
+            $color_index = array_search($row['criteria' . $criteria . '_color_id'], array_column($survey_colors, 'id'));
+    
+            if ($color_index !== false) {
+                if ($row['Senior'] > 0) {
+                    $chart_data['Senior'][$color_index] = (int)$row['Senior'];
+                }
+                if ($row['PWD'] > 0) {
+                    $chart_data['PWD'][$color_index] = (int)$row['PWD'];
+                }
+                // if ($row['Women'] > 0) {
+                //     $chart_data['Women'][$color_index] = (int)$row['Women'];
+                // }
+                // if ($row['Youth'] > 0) {
+                //     $chart_data['Youth'][$color_index] = (int)$row['Youth'];
+                // }
+            }
+        }
+    
+        // Prepare final chart data in the required format
+        $chart_data_final = [
+            ["name" => "Senior", "data" => $chart_data['Senior']],
+            ["name" => "PWD", "data" => $chart_data['PWD']],
+            // ["name" => "Youth", "data" => $chart_data['Youth']],
+            // ["name" => "Women", "data" => $chart_data['Women']],
+        ];
+    
+        // Convert chart data and color labels to JSON
+        $chart_data_json = json_encode($chart_data_final);
+        $color_labels_json = json_encode($color_labels);
+    
+        // Fetch the available 'purok' based on the selected 'barangay'
+        $purok = [];
+        if ($barangay) {
+            $purok = Specialsurvey::find()
+                ->select(['purok'])
+                ->andWhere("purok is not null and purok not in('', '-', '0')")
+                ->andFilterWhere(['barangay' => $barangay])
+                ->groupBy('purok')
+                ->orderby(['purok' => SORT_ASC])
+                ->asArray()
+                ->all();
+        }
+    
+        // Return JSON response if AJAX request
+        if (Yii::$app->request->isAjax) {
+            return $this->asJson([
+                'chart_data_json' => $chart_data_json,
+                'color_labels_json' => $color_labels_json,
+                'purok' => $purok,
+            ]);
+        }
+    
+        // Render the view
+        return $this->render('voter_segmentation_by_sector', [
             'chart_data_json' => $chart_data_json,
-            'barangay_labels_json' => $barangay_labels_json,
+            'color_labels_json' => $color_labels_json,
         ]);
     }
+    
 
     public function actionVoterSocialAssistanceBeneficiaries($criteria= null){
         $survey_color = Specialsurvey::surveyColorReIndex();

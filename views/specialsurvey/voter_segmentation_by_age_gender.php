@@ -57,7 +57,6 @@
                 var criteria = $('#select-criteria').val();
                 var color = $('#color-select').val();
 
-                // Only store the selected purok IF the barangay hasn't changed
                 var selectedPurok = $('#select-purok').val();
                 if ($(this).attr('id') === 'select-barangay') {
                     selectedPurok = ""; // Reset purok if barangay changes
@@ -75,10 +74,10 @@
                         let totalMale = Math.abs(maleCounts.reduce((a, b) => a + b, 0));
                         let totalFemale = femaleCounts.reduce((a, b) => a + b, 0);
 
-                        // ✅ Reset purok dropdown
+       
                         $("#select-purok").html('<option value="" selected>Select..</option>');
 
-                        let purokExists = false; // Track if previous purok exists in new list
+                        let purokExists = false;
 
                         $.each(response.purok, function (key, value) {
                             let isSelected = selectedPurok === value.purok ? 'selected' : '';
@@ -86,7 +85,7 @@
                             $("#select-purok").append('<option value="' + value.purok + '" ' + isSelected + '>' + value.purok + '</option>');
                         });
 
-                        // ✅ Reset selection if old purok doesn't exist in new barangay
+                       
                         if (!purokExists) {
                             $("#select-purok").val(""); // Reset to "Select.."
                         }
