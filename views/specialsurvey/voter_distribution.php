@@ -148,16 +148,16 @@ CSS, ['type' => "text/css"]);
             <p class="lead font-weight-bold mb-0">Filters: </p>
         </div>
         
-        
-        <!-- <div class="ml-5 text-center color-voters" >
-          <div id="checkbox-colors" class="checkbox-list"> 
-        	  <label class="checkbox"><input type="checkbox" checked value="1" name="color[]">  <span class="color-box" style="background: #181c32;"></span>  Black</label>
-              <label class="checkbox"> <input type="checkbox" checked value="2" name="color[]">  <span class="color-box" style="background: #e4e6ef;"></span>  Gray</label>
-              <label class="checkbox"> <input type="checkbox" checked value="3" name="color[]">  <span class="color-box" style="background: #1bc5bd;"></span>  Green</label>
-              <label class="checkbox"> <input type="checkbox" checked value="4" name="color[]">  <span class="color-box" style="background: #f64e60;"></span>  Red</label>
-          </div>
+        <!-- not displaying -->
+        <div class="ml-5 text-center color-voters d-none" >
+        <div id="checkbox-colors" class="checkbox-list"> 
+            <label class="checkbox"><input type="checkbox"  value="1" name="color[]">  <span class="color-box" style="background: #5096f2;"></span>  Blue</label>
+            <label class="checkbox"> <input type="checkbox" checked value="2" name="color[]">  <span class="color-box" style="background: #e4e6ef;"></span>  Gray</label>
+            <label class="checkbox"> <input type="checkbox"  value="3" name="color[]">  <span class="color-box" style="background: #000000;"></span>  Blackx</label>
+            <label class="checkbox"> <input type="checkbox"  value="4" name="color[]">  <span class="color-box" style="background: #404040;"></span>  Blacky</label>
+            <label class="checkbox"> <input type="checkbox"  value="5" name="color[]">  <span class="color-box" style="background: #808080;"></span>  Blacku</label>
         </div>
-         -->
+        </div>
         
         <div class="ml-5">
            <select class="form-control" id="select-barangay">
@@ -343,8 +343,9 @@ CSS, ['type' => "text/css"]);
                            const total_voters = e.features[0].properties.total_voters;
                            const householdNo = e.features[0].properties.household_no;
                            const color = e.features[0].properties.color_label;
-                           const content='<div id="voters'+householdNo+'" style="min-height: 200px; width: 230px; font-size: 11px;"><div><strong>'+votersName+' Family</strong><br/>HS No.: '+householdNo+'</div><br/>Total Voters: '+total_voters+'<br/>Color: '+color+'<div class="voters">Loading..</div></div>';
-                           
+                        //    const content='<div id="voters'+householdNo+'" style="min-height: 200px; width: 230px; font-size: 11px;"><div><strong>'+votersName+' Family</strong><br/>HS No.: '+householdNo+'</div><br/>Total Voters: '+total_voters+'<br/>Color: '+color+'<div class="voters">Loading..</div></div>';
+                            const content='<div id="voters'+householdNo+'" style="min-height: 200px; width: 230px; font-size: 11px;"><div><strong>'+votersName+' Family</strong><br/><div class="voters">Loading..</div></div>';
+
                             // Ensure that if the map is zoomed out such that multiple
                             // copies of the feature are visible, the popup appears
                             // over the copy being pointed to.
@@ -366,8 +367,9 @@ CSS, ['type' => "text/css"]);
                                     const color_survey = $("#checkbox-colors input:checkbox:checked").map(function(){
                                         return $(this).val();
                                         }).get();
+                                       
                                    
-                                   const voterslisUrl = app.baseUrl + 'specialsurvey/population-coordinates?hs='+householdNo+'&barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey=2'+'&purok='+purok;
+                                   const voterslisUrl = app.baseUrl + 'specialsurvey/population-coordinates?hs='+householdNo+'&barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
                                    $.ajax({
                                        url: voterslisUrl,
                                        method: 'get',
@@ -380,6 +382,22 @@ CSS, ['type' => "text/css"]);
                                            }
                                        
                                    });
+
+                                   const urllist = app.baseUrl + 'specialsurvey/voter-distribution?barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok+'&household_no='+householdNo;
+                        
+                                    $.ajax({
+                                        url: urllist,
+                                        method: 'get',
+                                        dataType: 'html',
+                                        success: (s) => {
+                                            //console.log(s);
+                                        $('#content-listing').html(s);   
+                                        },
+                                        error: (e) => {
+                                            console.log('e', e)
+                                        
+                                        }
+                                    });
                                    
                                    
                                    
@@ -406,9 +424,9 @@ CSS, ['type' => "text/css"]);
                             method: 'get',
                             dataType: 'json',
                             success: (s) => {
-                                const layer = map.getLayer('gray-barangay--coordinates');
+                                const layer = map.getLayer('barangay--coordinates');
                                 if (layer) {
-                                    map.setPaintProperty('gray-barangay--coordinates', 'fill-color', s.output);
+                                    map.setPaintProperty('barangay--coordinates', 'fill-color', s.output);
                                 }
                                 
                              
@@ -501,7 +519,9 @@ CSS, ['type' => "text/css"]);
                         let purok= $("#select-purok").val();
                         const date_survey = $('input[name="date_survey"]').val();
                         
-                        const color_survey = ["2"]
+                        const color_survey = $("#checkbox-colors input:checkbox:checked").map(function(){
+                                        return $(this).val();
+                                        }).get();
                          if(curbarangay!=barangay){
                             purok='';  
                          }   
