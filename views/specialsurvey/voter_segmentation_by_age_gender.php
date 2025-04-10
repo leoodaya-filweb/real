@@ -104,6 +104,7 @@
         });
 
         function renderChart(ageLabels, maleCounts, femaleCounts) {
+
             var options = {
                 series: [
                     {
@@ -182,7 +183,7 @@
                     }
                 },
                 title: {
-                    text: 'Voter Segmentation by Gender',
+                    text: 'Voter Segmentation by Age',
                     align: 'center',
                     style: {
                     fontSize: '24px', 
