@@ -183,7 +183,7 @@
                     }
                 },
                 title: {
-                    text: 'Voter Segmentation by Age',
+                    text: 'Voter Segmentation by Age Group',
                     align: 'center',
                     style: {
                     fontSize: '24px', 

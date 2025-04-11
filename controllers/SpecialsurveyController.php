@@ -17,8 +17,10 @@ use app\models\form\export\ExportExcelForm;
 use app\models\form\setting\AddressSettingForm;
 use app\models\form\setting\SurveySettingForm;
 use app\models\Member;
+use app\models\search\MemberSearch;
 use app\models\search\SpecialsurveySearch;
 use yii\data\ActiveDataProvider;
+use yii\data\ArrayDataProvider;
 use yii\data\Pagination;
 
 use yii\helpers\ArrayHelper;
@@ -385,137 +387,139 @@ t.*,
         
         
         //  OLD 
-        // if($hs){
-        //     $household= Household::find()->where(['no'=>$hs])->one();
-        //     $voters = Specialsurvey::find()->alias('t')
-        //     ->select(['t.*, (t.criteria'.$criteria.'_color_id) as criteria1_color_id'])
-        //     ->where(['household_no'=>$hs])
-        //     ->andFilterWhere(['t.survey_name'=>$queryParams['survey_name']])
-        //     ->all();
-        //       $survey_color = Specialsurvey::surveyColorReIndex();
-                   
-        //     $output=null;
-        //     if($voters){
-                
-        //    $output.='
-        //        <div>
-               
-               
-               
-               
-        //         Total Number of Assistance: '.$household->totalTransactions.'
-        //         <br/>Total Amount: '.$household->totalAmountTransactions.'
-        //         <br/>Social Pension: '.$household->social_pension.'
-        //         <br/>
-        //        </div>
-        //        <table class="table table-striped">
-        //          <tr>
-        //          <th></th>
-        //          <th>VOTER\'S</th>
-        //          <th>SEX / BIRTHDATE</th>
-        //          </tr>
-        //         ';
-                
-        //         foreach($voters as $key=>$row){
-        //             $output .='<tr>';
-        //             $output .= '<td><span class="badge badge-pill" style="background-color: '.$survey_color[$row->criteria1_color_id]['color'].'; height: 20px; width: 20px; padding:0px!Important;">&nbsp; &nbsp; </span></td>';
-        //             $output .= '<td>'.$row->last_name.', '.$row->first_name.'</td>';
-        //             $output .= '<td>'.$row->gender.' / '.$row->date_of_birth.'</td>';
-        //             $output .='</tr>';
-        //         }
-                
-        //         $output .='</table>';
-        //     }
-
-        //    return $output;
-           
-        // }
-
-        if ($hs) {
-            $household = Household::find()->where(['no' => $hs])->one();
-            if (!$household) {
-                return "Household not found.";
-            }
-        
-            $familyHead = Member::find()->where(['household_id' => $household->id, 'head' => 1])->one();
-            if (!$familyHead) {
-                return "Family Head not found.";
-            }
-        
+        if($hs){
+            $household= Household::find()->where(['no'=>$hs])->one();
             $voters = Specialsurvey::find()->alias('t')
-                ->select(['t.*, (t.criteria' . $criteria . '_color_id) as criteria1_color_id'])
-                ->where(['household_no' => $hs])
-                ->andFilterWhere(['t.survey_name' => $queryParams['survey_name']])
-                ->all();
-        
-            $survey_color = Specialsurvey::surveyColorReIndex();
-            $output = null;
-        
-            if ($voters) {
-                $output .= '<div>';
-                $output .= 'Family Head: ' . ucfirst(strtolower($familyHead->last_name)) . ", " . ucfirst(strtolower($familyHead->first_name)) . " " . ucfirst(strtolower($familyHead->middle_name)) . '<br/>';
-                $output .= "Total Voters: " . count($voters);
-        
-                $output .= '<div class="container-fluid row gap-3 justify-content-center mt-1">';
-        
-                $counter = 0;
-                foreach ($survey_color as $color_id => $color_data) {
-                    $totalVoters = Specialsurvey::find()
-                        ->where(['household_no' => $hs, 'criteria' . $criteria . '_color_id' => $color_id])
-                        ->andFilterWhere(['survey_name' => $queryParams['survey_name']])
-                        ->count();
-        
-                    if ($counter % 2 === 0) {
-                        $output .= '<div class="d-flex gap-3 justify-content-center mb-3" style="width: 100%;">';
-                    }
-        
-                    $output .= '<div class="card text-center" title="' . htmlspecialchars($color_data['name']) . '" style="background-color: ' . htmlspecialchars($color_data['color']) . '; color: ' . ($color_data['color'] === '#e4e6ef' ? 'black' : 'white') . '; padding: 5px; flex: 1; height: 65px; max-width: 70px; margin: 0 5px;">';
-                    $output .= '<div class="card-body" style="font-size: 12px; display: flex; align-items: center; justify-content: center; height: 100%;">';
-                    $output .= '<div>' . $totalVoters . '</div>';
-                    $output .= '</div>';
-                    $output .= '</div>';
-        
-                    $counter++;
-                    if ($counter % 2 === 0) {
-                        $output .= '</div>'; // Close row after every 2 cards
-                    }
+            ->select(['t.*, (t.criteria'.$criteria.'_color_id) as criteria1_color_id'])
+            ->where(['household_no'=>$hs])
+            ->andFilterWhere(['t.survey_name'=>$queryParams['survey_name']])
+            ->all();
+              $survey_color = Specialsurvey::surveyColorReIndex();
+                   
+            $output=null;
+            if($voters){
+                
+           $output.='
+               <div>
+               
+               
+               
+               
+                Total Number of Assistance: '.$household->totalTransactions.'
+                <br/>Total Amount: '.$household->totalAmountTransactions.'
+                <br/>Social Pension: '.$household->social_pension.'
+                <br/>
+               </div>
+               <table class="table table-striped">
+                 <tr>
+                 <th></th>
+                 <th>VOTER\'S</th>
+                 <th>SEX / BIRTHDATE</th>
+                 </tr>
+                ';
+                
+                foreach($voters as $key=>$row){
+                    $output .='<tr>';
+                    $output .= '<td><span class="badge badge-pill" style="background-color: '.$survey_color[$row->criteria1_color_id]['color'].'; height: 20px; width: 20px; padding:0px!Important;">&nbsp; &nbsp; </span></td>';
+                    $output .= '<td>'.$row->last_name.', '.$row->first_name.'</td>';
+                    $output .= '<td>'.$row->gender.' / '.$row->date_of_birth.'</td>';
+                    $output .='</tr>';
                 }
-        
-                if ($counter % 2 !== 0) {
-                    $output .= '</div>'; // Close last row if it has an odd number of cards
-                }
-        
-                $output .= '</div>'; // Close main container
-        
-                // $output .= 'Total Number of Assistance: ' . $household->totalTransactions . '<br/>';
-                // $output .= 'Total Amount: ' . $household->totalAmountTransactions . '<br/>';
-                // $output .= 'Social Pension: ' . $household->social_pension . '<br/>';
-                $output .= '<div class="d-flex gap-2 justify-content-center mb-1">';
-
-                // Household Profile Card
-                $output .= '<div class="card text-center" style="background-color: #ffffff; color: black; padding: 10px; flex: 1; height: 80px; max-width: 100px; margin: 0 5px; cursor: pointer; border-radius: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); border: 1px solid #ddd;">';
-                $output .= '<div class="card-body" style="font-size: 14px; display: flex; align-items: center; justify-content: center; height: 100%;">';
-                $output .= '<div>Household Profile</div>';
-                $output .= '</div>';
-                $output .= '</div>';
-
-                // Previous Record Card 
-                $output .= '<div class="card text-center" style="background-color: #464545; color: white; padding: 10px; flex: 1; height: 80px; max-width: 100px; margin: 0 5px; cursor: pointer; border-radius: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); border: 1px solid #ddd;">';
-                $output .= '<div class="card-body" style="font-size: 14px; display: flex; align-items: center; justify-content: center; height: 100%;">';
-                $output .= '<div>Previous Record</div>';
-                $output .= '</div>';
-                $output .= '</div>';
-
-                $output .= '</div>'; // Close the main div
-
-
-                $output .= 'Encoder: ' . ($voters->encoder ?? 'N/A') . '<br/>';
-                $output .= 'Leader: ' . ($voters->leader ?? 'N/A') . '<br/>';
-                $output .= '</div>';
+                
+                $output .='</table>';
             }
-        
-            return $output;
+
+           return $output;
+           
         }
+
+        //NEW DESIGN
+        // if ($hs) {
+        //     $household = Household::find()->where(['no' => $hs])->one();
+        //     if (!$household) {
+        //         return "Household not found.";
+        //     }
+        
+        //     $familyHead = Member::find()->where(['household_id' => $household->id, 'head' => 1])->one();
+        //     if (!$familyHead) {
+        //         return "Family Head not found.";
+        //     }
+        
+        //     $voters = Specialsurvey::find()->alias('t')
+        //         ->select(['t.*, (t.criteria' . $criteria . '_color_id) as criteria1_color_id'])
+        //         ->where(['household_no' => $hs])
+        //         ->andFilterWhere(['t.survey_name' => $queryParams['survey_name']])
+        //         ->all();
+        
+        //     $survey_color = Specialsurvey::surveyColorReIndex();
+        //     $output = null;
+        
+        //     if ($voters) {
+        //         $output .= '<div>';
+        //         $output .= 'Family Head: ' . ucfirst(strtolower($familyHead->last_name)) . ", " . ucfirst(strtolower($familyHead->first_name)) . " " . ucfirst(strtolower($familyHead->middle_name)) . '<br/>';
+        //         $output .= "Total Voters: " . count($voters);
+        
+        //         $output .= '<div class="container-fluid row gap-3 justify-content-center mt-1">';
+        
+        //         $counter = 0;
+        //         foreach ($survey_color as $color_id => $color_data) {
+        //             $totalVoters = Specialsurvey::find()
+        //                 ->where(['household_no' => $hs, 'criteria' . $criteria . '_color_id' => $color_id])
+        //                 ->andFilterWhere(['survey_name' => $queryParams['survey_name']])
+        //                 ->count();
+        
+        //             if ($counter % 2 === 0) {
+        //                 $output .= '<div class="d-flex gap-3 justify-content-center mb-3" style="width: 100%;">';
+        //             }
+        
+        //             $output .= '<div class="card text-center" title="' . htmlspecialchars($color_data['name']) . '" style="background-color: ' . htmlspecialchars($color_data['color']) . '; color: ' . ($color_data['color'] === '#e4e6ef' ? 'black' : 'white') . '; padding: 5px; flex: 1; height: 65px; max-width: 70px; margin: 0 5px;">';
+        //             $output .= '<div class="card-body" style="font-size: 12px; display: flex; align-items: center; justify-content: center; height: 100%;">';
+        //             $output .= '<div>' . $totalVoters . '</div>';
+        //             $output .= '</div>';
+        //             $output .= '</div>';
+        
+        //             $counter++;
+        //             if ($counter % 2 === 0) {
+        //                 $output .= '</div>'; // Close row after every 2 cards
+        //             }
+        //         }
+        
+        //         if ($counter % 2 !== 0) {
+        //             $output .= '</div>'; // Close last row if it has an odd number of cards
+        //         }
+        
+        //         $output .= '</div>'; // Close main container
+        
+        //         // $output .= 'Total Number of Assistance: ' . $household->totalTransactions . '<br/>';
+        //         // $output .= 'Total Amount: ' . $household->totalAmountTransactions . '<br/>';
+        //         // $output .= 'Social Pension: ' . $household->social_pension . '<br/>';
+        //         $output .= '<div class="d-flex gap-2 justify-content-center mb-1">';
+
+        //         // Household Profile Card
+        //         $output .= '<div class="card text-center" style="background-color: #ffffff; color: black; padding: 10px; flex: 1; height: 80px; max-width: 100px; margin: 0 5px; cursor: pointer; border-radius: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); border: 1px solid #ddd;">';
+        //         $output .= '<div class="card-body" style="font-size: 14px; display: flex; align-items: center; justify-content: center; height: 100%;">';
+        //         $output .= '<div>Household Profile</div>';
+        //         $output .= '</div>';
+        //         $output .= '</div>';
+
+        //         // Previous Record Card 
+        //         $output .= '<div class="card text-center" style="background-color: #464545; color: white; padding: 10px; flex: 1; height: 80px; max-width: 100px; margin: 0 5px; cursor: pointer; border-radius: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); border: 1px solid #ddd;">';
+        //         $output .= '<div class="card-body" style="font-size: 14px; display: flex; align-items: center; justify-content: center; height: 100%;">';
+        //         $output .= '<div>Previous Record</div>';
+        //         $output .= '</div>';
+        //         $output .= '</div>';
+
+        //         $output .= '</div>'; // Close the main div
+
+
+        //         $output .= 'Encoder: ' . ($voters->encoder ?? 'N/A') . '<br/>';
+        //         $output .= 'Leader: ' . ($voters->leader ?? 'N/A') . '<br/>';
+        //         $output .= '</div>';
+        //     }
+        
+        //     return $output;
+        // }
+        
         
         if($brgy==1){
          $mdata = Barangay::find()->all();
@@ -1991,6 +1995,214 @@ t.*,
         ]);
         
     }
+
+
+    public function actionRegisteredVsUnregisteredVoters($list=null){
+
+        
+        $queryParams = App::queryParams();
+
+        // $searchModel = new SpecialsurveySearch();
+
+
+         /////////// GRAPH CODE ////////////
+         $data = (new \yii\db\Query())
+            ->select([
+                'b.name AS barangay_name',
+                'COUNT(m.id) AS total_population',
+                'SUM(CASE WHEN m.voter = 1 THEN 1 ELSE 0 END) AS registered_voters',
+                'SUM(CASE WHEN m.voter IN (0, 2) THEN 1 ELSE 0 END) AS unregistered_voters'
+            ])
+            ->from('tbl_barangays b')
+            ->leftJoin('tbl_households h', 'b.no = h.barangay_id')
+            ->leftJoin('tbl_members m', 'h.id = m.household_id')
+            ->andFilterWhere([
+                'b.name' => $queryParams['barangay'],
+                'h.purok_no' => $queryParams['purok'],
+            ])
+            ->groupBy(['b.id', 'b.name'])
+            ->orderBy(['b.name' => SORT_ASC])
+            ->all();
+        
+        $barangayLabels = [];
+        $registeredData = [];
+        $unregisteredData = [];
+        
+        foreach ($data as $row) {
+            $barangayLabels[] = $row['barangay_name'];
+            $registeredData[] = (int) $row['registered_voters'];
+            $unregisteredData[] = (int) $row['unregistered_voters'];
+        }
+        
+        // Prepare chart data for JS
+        $chartData = [
+            ['name' => 'Registered Voters', 'data' => $registeredData],
+            ['name' => 'Unregistered Voters', 'data' => $unregisteredData]
+        ];
+        
+
+         // Fix incorrect if condition
+        
+
+         if ($list == 1) {
+            $queryParams = App::queryParams();
+            
+            // Step 1: Get filtered member IDs
+            $filteredIds = (new \yii\db\Query())
+                ->select('m.id')
+                ->from(['m' => 'tbl_members'])
+                ->innerJoin(['hs' => 'tbl_households'], 'm.household_id = hs.id')
+                ->innerJoin(['b' => 'tbl_barangays'], 'hs.barangay_id = b.no')
+                ->where(['in', 'm.voter', [0, 2]]) // Use 'in' for better accuracy
+                ->andFilterWhere(['=', 'b.name', $queryParams['barangay'] ?? null])
+                ->andFilterWhere(['=', 'hs.purok_no', $queryParams['purok'] ?? null])
+                ->orderBy('m.id')
+                ->column();
+
+        
+            // If no results, return empty DataProvider
+            if (empty($filteredIds)) {
+                return $this->renderAjax('@app/views/member/index', [
+                    'searchModel' => new MemberSearch(),
+                    'dataProvider' => new ActiveDataProvider(['query' => Member::find()->where('0=1')]), // Empty result
+                ]);
+            }
+            
+            // Step 2: Apply IDs in the DataProvider query
+            $MemberSearch = new MemberSearch();
+            $dataProvider = $MemberSearch->search(['MemberSearch' => $queryParams]);
+            $dataProvider->query->filterWhere(['m.id' => $filteredIds]); // Ensure this works
+            
+        
+            return $this->renderAjax('@app/views/member/index', [
+                'searchModel' => $MemberSearch,
+                'dataProvider' => $dataProvider,
+            ]);
+        }
+        
+         
+        if(Yii::$app->request->isAjax){
+            return $this->asJson([
+                'barangayLabels' => json_encode($barangayLabels),
+                'chartData' => json_encode($chartData)
+            ]);
+        }
+
+        
+        return $this->render('registered_vs_unregistered_voters', [
+               
+            'barangayLabels' => json_encode($barangayLabels),
+            'chartData' => json_encode($chartData),
+        ]);
+
+       
+        
+    }
+
+    // public actionCanvassingCoverageProgress(){
+
+    // }
+
+
+    public function actionUnregisteredVotersPopulation($criteria = '', $brgy = '', $hs = '')
+    {
+        $queryParams = App::queryParams();
+
+        // ———— 1) Single-household popup ————
+        if ($hs) {
+            $household = Household::find()->where(['no' => $hs])->one();
+            if (!$household) {
+                return "Household not found.";
+            }
+
+            $familyHead = Member::find()
+                ->where(['household_id' => $household->id, 'head' => 1])
+                ->one();
+            if (!$familyHead) {
+                return "Family Head not found.";
+            }
+
+            // Count unregistered voters in this household
+            $count = (new \yii\db\Query())
+                ->from('tbl_members')
+                ->where(['household_id' => $household->id])
+                ->andWhere(['voter' => [0, 2]])
+                ->count();
+
+            return "
+                <div>
+                    Family Head: " . 
+                        ucfirst(strtolower($familyHead->last_name)) . ", " .
+                        ucfirst(strtolower($familyHead->first_name)) . " " .
+                        ucfirst(strtolower($familyHead->middle_name)) . "<br/>
+                    Unregistered Voters: {$count}
+                </div>
+            ";
+        }
+
+        // ———— 2) brgy=1: return all barangays as before ————
+        if ($brgy == 1) {
+            $features = [];
+            foreach (Barangay::find()->all() as $row) {
+                $features[] = [
+                    "type" => "Feature",
+                    "properties" => [
+                        "id" => $row->id,
+                        "name" => $row->name,
+                    ],
+                    "geometry" => [
+                        "type" => "Point",
+                        "coordinates" => [(float)$row->longitude, (float)$row->latitude]
+                    ]
+                ];
+            }
+
+            return $this->asJsonNumeric([
+                "type" => "FeatureCollection",
+                "features" => $features,
+            ]);
+        }
+
+        // ———— 3) Main map: unregistered voters only ————
+        $rows = (new \yii\db\Query())
+            ->select([
+                'm.id AS member_id',
+                'm.first_name', 'm.middle_name', 'm.last_name',
+                'h.latitude', 'h.longitude',
+                'h.no as household_no'
+            ])
+            ->from('tbl_members m')
+            ->leftJoin('tbl_households h', 'm.household_id = h.id')
+            ->where(['m.voter' => [0,2]])               // only unregistered
+            ->andWhere(['IS NOT', 'h.latitude', null])   // must have coords
+            ->andWhere(['IS NOT', 'h.longitude', null])
+
+            ->all();
+
+        $features = [];
+        foreach ($rows as $r) {
+            $features[] = [
+                "type" => "Feature",
+                "properties" => $r,
+                "geometry" => [
+                    "type" => "Point",
+                    "coordinates" => [
+                        (float)$r['longitude'],
+                        (float)$r['latitude']
+                    ]
+                ]
+            ];
+        }
+
+        return $this->asJsonNumeric([
+            "type" => "FeatureCollection",
+            "features" => $features,
+        ]);
+    }
+
+    
+
+
     
     
     
