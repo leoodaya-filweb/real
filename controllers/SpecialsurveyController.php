@@ -2074,10 +2074,22 @@ t.*,
             $dataProvider->query->filterWhere(['m.id' => $filteredIds]); // Ensure this works
             
         
-            return $this->renderAjax('@app/views/member/index', [
-                'searchModel' => $MemberSearch,
+            // Render members list as HTML
+            $membersHtml = $this->renderAjax('@app/views/member/index', [
+                'searchModel' => new MemberSearch(),
                 'dataProvider' => $dataProvider,
             ]);
+            
+            // Return JSON with both the rendered HTML and chart data
+            return $this->asJson([
+                'membersHtml' => $membersHtml, // Table content
+                'barangayLabels' => json_encode($barangayLabels),
+                'chartData' => json_encode($chartData),
+            ]);
+            // return $this->renderAjax('@app/views/member/index', [
+            //     'searchModel' => $MemberSearch,
+            //     'dataProvider' => $dataProvider,
+            // ]);
         }
         
          
