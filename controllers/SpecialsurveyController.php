@@ -986,8 +986,8 @@ t.*,
             $output[] = $barangays;
             $output[] = $color;
         }
-        $output[] = "#e4e6ef";
-    
+        // $output[] = "#e4e6ef";
+        $output[] = "#808080";  
         if (!empty($queryParams['graph']) && !empty($queryParams['grey']) && $queryParams['graph'] == 1 && $queryParams['grey'] == 1) {
             return $this->renderAjax('_grey_graph', [
                 'features' => $features,
@@ -1626,16 +1626,16 @@ t.*,
                 // $output .= 'Total Number of Assistance: ' . $household->totalTransactions . '<br/>';
                 // $output .= 'Total Amount: ' . $household->totalAmountTransactions . '<br/>';
                 // $output .= 'Social Pension: ' . $household->social_pension . '<br/>';
-                $output .= '<div class="d-flex gap-2 justify-content-center mb-1">';
+                $output .= '<div class="d-flex gap-2 justify-content-center mb-2">';
                 // Household Profile Card
-                $output .= '<div class="card text-center" style="background-color: #ffffff; color: black; padding: 10px; flex: 1; height: 80px; max-width: 100px; margin: 0 5px; cursor: pointer; border-radius: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); border: 1px solid #ddd;" onclick="window.open(\'' . Yii::$app->urlManager->createAbsoluteUrl(['/household/view', 'no' => $hs]) . '\', \'_blank\')">';
+                $output .= '<div class="card text-center" style="background-color: #ffffff; color: black; padding: 5px; flex: 1; height: 65px; max-width: 85px; margin: 0 2px; cursor: pointer; border-radius: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); border: 1px solid #ddd;" onclick="window.open(\'' . Yii::$app->urlManager->createAbsoluteUrl(['/household/view', 'no' => $hs]) . '\', \'_blank\')">';
                 $output .= '<div class="card-body" style="font-size: 14px; display: flex; align-items: center; justify-content: center; height: 100%;">';
                 $output .= '<div>Household Profile</div>';
                 $output .= '</div>';
                 $output .= '</div>';
 
                 // Previous Record Card 
-                $output .= '<div class="card text-center" style="background-color: #464545; color: white; padding: 10px; flex: 1; height: 80px; max-width: 100px; margin: 0 5px; cursor: pointer; border-radius: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); border: 1px solid #ddd;" onclick="window.open(\'' . Yii::$app->urlManager->createAbsoluteUrl(['/household/previous-record', 'no' => $hs]) . '\', \'_blank\')">';
+                $output .= '<div class="card text-center" style="background-color: #464545; color: white; padding: 5px; flex: 1; height: 65px; max-width: 85px; margin: 0 2px; cursor: pointer; border-radius: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); border: 1px solid #ddd;" onclick="window.open(\'' . Yii::$app->urlManager->createAbsoluteUrl(['/household/previous-record', 'no' => $hs]) . '\', \'_blank\')">';
                 $output .= '<div class="card-body" style="font-size: 14px; display: flex; align-items: center; justify-content: center; height: 100%;">';
                 $output .= '<div>Previous Record</div>';
                 $output .= '</div>';

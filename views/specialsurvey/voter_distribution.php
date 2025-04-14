@@ -369,7 +369,7 @@ CSS, ['type' => "text/css"]);
                                         }).get();
                                        
                                    
-                                   const voterslisUrl = app.baseUrl + 'specialsurvey/population-coordinates?hs='+householdNo+'&barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
+                                   const voterslisUrl = app.baseUrl + 'specialsurvey/population-coordinates2?hs='+householdNo+'&barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
                                    $.ajax({
                                        url: voterslisUrl,
                                        method: 'get',
