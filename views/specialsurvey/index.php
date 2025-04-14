@@ -362,7 +362,7 @@ CSS, ['type' => "text/css"]);
                                 3, '#000000', // Blackx
                                 4, '#404040', // Blacky
                                 5, '#808080', // Blacku
-                                /* other */ '#F64E60' // Default
+                                /* other */ '#FFFFFF' // Default
                             ]
                         },
                         source: 'voters'

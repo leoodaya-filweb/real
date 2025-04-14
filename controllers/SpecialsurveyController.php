@@ -1535,7 +1535,7 @@ t.*,
         }
 
         
-        $output[] = "#808080";
+        $output[] = "#FFFFFF";
     
         if ($queryParams['graph'] == 1) {
             return $this->renderAjax('_graph', [
