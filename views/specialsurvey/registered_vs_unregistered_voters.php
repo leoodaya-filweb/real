@@ -128,9 +128,11 @@ $this->registerJs(<<<JS
     //         success: function (response) {
     //             const data = JSON.parse(response.chartData);
     //             const label = JSON.parse(response.barangayLabels);
-    //             renderChart(data, label);
-    //             $('#content-listing').html("");
+                
+              
     //             $('#content-listing').html(response.membersHtml);  
+    //             renderChart(data, label);
+               
                 
     //         },
     //         error: function (e) {
@@ -377,7 +379,7 @@ JS);
                  
                    //Voters
                  
-                   const datasourceUrl = app.baseUrl + 'specialsurvey/unregistered-voters-population?barangay={$searchModel->barangay}&purok={$searchModel->purok}&keywords={$searchModel->keywords}';
+                   const datasourceUrl = app.baseUrl + 'specialsurvey/unregistered-voters-population?barangay={$searchModel->barangay}&purok={$searchModel->purok}';
             
                 
                    map.addSource('voters', {
@@ -412,7 +414,7 @@ JS);
                            const householdNo = e.features[0].properties.household_no;
                            const color = e.features[0].properties.color_label;
                            const content='<div id="voters'+householdNo+'" style="min-height: 200px; width: 230px; font-size: 11px;"><div><strong>'+votersName+' Family</strong><br/><div class="voters">Loading..</div></div>';
-                               console.log(e.features[0].properties);
+                            //    console.log(e.features[0].properties);
                            
                             // Ensure that if the map is zoomed out such that multiple
                             // copies of the feature are visible, the popup appears
@@ -448,9 +450,31 @@ JS);
                                                console.log('e', e)
                                            }
                                        
+
+
                                    });
 
-                                   const urllist = app.baseUrl + 'specialsurvey/registered-vs-unregistered-voters?list=1&barangay='+barangay+ '&purok='+purok+'&household_no='+householdNo;
+
+                                //    const urlGraph = app.baseUrl + 'specialsurvey/registered-vs-unregistered-voters?list=1&barangay='+barangay+ '&purok='+purok;
+                        
+                                //     $.ajax({
+                                //         url: urlGraph,
+                                //         method: 'get',
+                                //         dataType: 'html',
+                                //         success: (s) => {
+                                //             const data = JSON.parse(s.chartData);
+                                //             const label = JSON.parse(s.barangayLabels);
+                                //             renderChart(data, label);
+                                           
+
+                                //         },
+                                //         error: (e) => {
+                                //             console.log('e', e)
+                                        
+                                //         }
+                                //     });
+
+                                   const urllist = app.baseUrl + 'specialsurvey/registered-vs-unregistered-voters?&barangay='+barangay+ '&purok='+purok+'&household_no='+householdNo;
                         
                                     $.ajax({
                                         url: urllist,
@@ -459,8 +483,11 @@ JS);
                                         success: (s) => {
                                             //console.log(s);
                                             // $('#content-listing').html("");
-                                            $('#content-listing').html(s.membersHtml);   
-                                            console.log(typeof changeRecordStatus);
+                                           
+                                            // console.log(s);
+                                            
+                                            $('#content-listing').html(s);   
+                                           
 
                                         },
                                         error: (e) => {
@@ -468,6 +495,7 @@ JS);
                                         
                                         }
                                     });
+
                                    
                                    
                                    
@@ -589,24 +617,53 @@ JS);
 
                          changePaint(dataUrl + '?barangay='+barangay+'&purok='+purok);
                          
+
+                         $.ajax({
+                            url: app.baseUrl +'/specialsurvey/registered-vs-unregistered-voters?list=1',
+                            method: 'get',
+                            data: { barangay, purok: purok,  },
+                            success: function (response) {
+                                const data = JSON.parse(response.chartData);
+                                const label = JSON.parse(response.barangayLabels);
+                                renderChart(data, label);
+                                // console.log(response);
+                                
+                                // $('#content-listing').html(response);  
+                                
+
+                                
+                            },
+                            error: function (e) {
+                                console.log('AJAX error', e);
+                            }
+                        });
                          
                          
-                        const urllist = app.baseUrl + 'specialsurvey/registered-vs-unregistered-voters?list=1&barangay='+barangay+ '&purok='+purok;
+                        const urllist = app.baseUrl + 'specialsurvey/registered-vs-unregistered-voters?&barangay='+barangay+ '&purok='+purok;
                         
                         $.ajax({
                             url: urllist,
                             method: 'get',
                             dataType: 'html',
                             success: (s) => {
-                                //console.log(s);
+                                // console.log(s);
                                 
                                $('#content-listing').html(s);   
+
+                            //    const data = JSON.parse(s.chartData);
+                            //     const label = JSON.parse(s.barangayLabels);
+                            //     renderChart(data, label);
                             },
                             error: (e) => {
                                 console.log('e', e)
                                
                             }
+                            
                         });
+
+
+                       
+                            
                          
                          
                          
@@ -637,10 +694,10 @@ JS);
                         }
                        
                           KTApp.block('.loading-container', {
-                            overlayColor: '#000000',
-                            message: 'Loading',
-                            state: 'primary'
-                        });
+                                overlayColor: '#000000',
+                                message: 'Loading',
+                                state: 'primary'
+                            });
 
                         // const criteria = $('#select-criteria').val();
                         // const survey_name = $('#select-survey').val();
@@ -650,6 +707,7 @@ JS);
                         // const color_survey = $("#checkbox-colors input:checkbox:checked").map(function(){
                         //     return $(this).val();
                         //     }).get();
+                        // console.log(barangay);
                         
                  
                             $('#select-barangay').val(barangay);
@@ -657,7 +715,15 @@ JS);
                     
                             
                            
-                            $.ajax({
+                            
+                            
+                             const datasourceUrl2 = app.baseUrl + 'specialsurvey/unregistered-voters-population?barangay='+barangay+'&purok='+purok;
+                             map.getSource('voters').setData(datasourceUrl2);
+                            
+                             changePaint(dataUrl + '?barangay='+barangay+'&purok='+purok);
+                             
+                            //render chart
+                             $.ajax({
                                 url: app.baseUrl +'/specialsurvey/registered-vs-unregistered-voters?list=1',
                                 method: 'get',
                                 data: { barangay, purok: purok,  },
@@ -665,9 +731,10 @@ JS);
                                     const data = JSON.parse(response.chartData);
                                     const label = JSON.parse(response.barangayLabels);
                                     renderChart(data, label);
+                                    // console.log(response);
                                     
-                                    $('#content-listing').html(response.membersHtml);  
-                                    eval(response.script);
+                                    // $('#content-listing').html(response);  
+                                    
 
                                    
                                 },
@@ -675,33 +742,27 @@ JS);
                                     console.log('AJAX error', e);
                                 }
                             });
-                            
-                             const datasourceUrl2 = app.baseUrl + 'specialsurvey/unregistered-voters-population?barangay='+barangay+'&purok='+purok;
-                             map.getSource('voters').setData(datasourceUrl2);
-                              
-                              
-                            
-                             changePaint(dataUrl + '?barangay='+barangay+'&purok='+purok);
                              
+                             const urllist = app.baseUrl + 'specialsurvey/registered-vs-unregistered-voters?barangay='+barangay+ '&purok='+purok;
                              
-                             const urllist = app.baseUrl + 'specialsurvey/registered-vs-unregistered-voters?list=1&barangay='+barangay+ '&purok='+purok;
                             
-                        //    $.ajax({
-                        //     url: urllist,
-                        //     method: 'get',
-                        //     dataType: 'html',
-                        //     success: (s) => {
-                        //         //console.log(s);
-                        //        $('#content-listing').html(s.membersHtml);   
-                        //        const data = JSON.parse(response.chartData);
-                        //             const label = JSON.parse(response.barangayLabels);
-                        //             renderChart(data, label);
-                        //     },
-                        //     error: (e) => {
-                        //         console.log('e', e)
-                               
-                        //     }
-                        //     });
+                            //  render list of unregistered voters
+                                $.ajax({
+                                    url: urllist,
+                                    method: 'get',
+                                    dataType: 'html',
+                                    success: (s) => {
+                                        //console.log(s);
+                                        $('#content-listing').html(s);   
+                                
+                                    },
+                                    error: (e) => {
+                                        console.log('e', e)
+                                    
+                                    }
+                                });
+
+
 
                             
                            
@@ -760,13 +821,32 @@ JS);
  <div class="mt-10"></div>
  
 
-    <div id="registered-vs-unregistered-graph">
-                    
-    </div>
+    <div id="registered-vs-unregistered-graph"></div>
 
 
  
     <div id="content-listing">
+        <?= FilterColumn::widget(['searchModel' => $MemberSearch]) ?>
+        <?= Html::beginForm(['bulk-action'], 'post'); ?>
+            <?= Html::a('Import Members Data', ['import'], [
+                'class' => 'btn btn-outline-primary ml-10 btn-sm btn-import-member',
+            ]) ?>
+            <?= BulkAction::widget(['searchModel' => $MemberSearch]) ?>
+            
+            <?= Grid::widget([
+                'dataProvider' => $dataProvider,
+                'searchModel' => $MemberSearch,
+                'template' => ['view', 'update', 'duplicate', 'delete', 'download-qr-code'],
+                'rowOptions' => function ($model, $index, $widget, $grid){
+                        if($model->head==1){
+                        return ['style' => 'background-color:#f1f1f1;']; 
+                        }else{
+                        return [];  
+                        }
+                    }
+                
+            ]); ?>
+        <?= Html::endForm(); ?> 
       
     </div>
     

@@ -15,7 +15,12 @@ $this->params['searchModel'] = $searchModel;
 $this->params['showCreateButton'] = true; 
 $this->params['showExportButton'] = true;
 ?>
+
+
+
 <div class="member-index-page">
+    
+
     <?= FilterColumn::widget(['searchModel' => $searchModel]) ?>
     <?= Html::beginForm(['bulk-action'], 'post'); ?>
         <?= Html::a('Import Members Data', ['import'], [

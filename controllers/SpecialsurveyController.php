@@ -1442,7 +1442,7 @@ t.*,
         ];
 
       
-    
+       
         foreach ($coordinates as $row) {
             $coordinates = json_decode($row['coordinates'], true);
             $total_black = $barangay_data[$row['barangay']]["criteria{$criteria}_color_black"] ?? 0;
@@ -1456,6 +1456,21 @@ t.*,
                 3 => $total_green,
                 4 => $total_red
             ];
+
+            // $total_blue = $barangay_data[$row['barangay']]["criteria{$criteria}_color_blue"] ?? 0;
+            // $total_gray = $barangay_data[$row['barangay']]["criteria{$criteria}_color_gray"] ?? 0;
+            // $total_blackx = $barangay_data[$row['barangay']]["criteria{$criteria}_color_blackx"] ?? 0;
+            // $total_blacky = $barangay_data[$row['barangay']]["criteria{$criteria}_color_blacky"] ?? 0;
+            // $total_blacku = $barangay_data[$row['barangay']]["criteria{$criteria}_color_blacku"] ?? 0;
+
+
+            // $barangay_colors = [
+            //     1 => $total_blue,
+            //     2 => $total_gray,
+            //     3 => $total_blackx,
+            //     4 => $total_blacky,
+            //     5=> $total_blacku,
+            // ];
 
             arsort($barangay_colors);
             $dominant_color_id = key($barangay_colors);
@@ -1472,11 +1487,11 @@ t.*,
 
             $household_colors = [];
             foreach (App::setting('surveyColor')->survey_color as $key => $sc) {
-            $household_colors[] = [
-                'label' => $sc['label'],
-                'total' => Html::number($barangay_colors[$key + 1] ?? 0),
-                'color' => $sc['color'],
-            ];
+                $household_colors[] = [
+                    'label' => $sc['label'],
+                    'total' => Html::number($barangay_colors[$key + 1] ?? 0),
+                    'color' => $sc['color'],
+                ];
             }
 
             if ($row['barangay'] == "Poblacion 61 (Barangay 2)") {
@@ -1612,16 +1627,15 @@ t.*,
                 // $output .= 'Total Amount: ' . $household->totalAmountTransactions . '<br/>';
                 // $output .= 'Social Pension: ' . $household->social_pension . '<br/>';
                 $output .= '<div class="d-flex gap-2 justify-content-center mb-1">';
-
                 // Household Profile Card
-                $output .= '<div class="card text-center" style="background-color: #ffffff; color: black; padding: 10px; flex: 1; height: 80px; max-width: 100px; margin: 0 5px; cursor: pointer; border-radius: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); border: 1px solid #ddd;">';
+                $output .= '<div class="card text-center" style="background-color: #ffffff; color: black; padding: 10px; flex: 1; height: 80px; max-width: 100px; margin: 0 5px; cursor: pointer; border-radius: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); border: 1px solid #ddd;" onclick="window.open(\'' . Yii::$app->urlManager->createAbsoluteUrl(['/household/view', 'no' => $hs]) . '\', \'_blank\')">';
                 $output .= '<div class="card-body" style="font-size: 14px; display: flex; align-items: center; justify-content: center; height: 100%;">';
                 $output .= '<div>Household Profile</div>';
                 $output .= '</div>';
                 $output .= '</div>';
 
                 // Previous Record Card 
-                $output .= '<div class="card text-center" style="background-color: #464545; color: white; padding: 10px; flex: 1; height: 80px; max-width: 100px; margin: 0 5px; cursor: pointer; border-radius: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); border: 1px solid #ddd;">';
+                $output .= '<div class="card text-center" style="background-color: #464545; color: white; padding: 10px; flex: 1; height: 80px; max-width: 100px; margin: 0 5px; cursor: pointer; border-radius: 10px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); border: 1px solid #ddd;" onclick="window.open(\'' . Yii::$app->urlManager->createAbsoluteUrl(['/household/previous-record', 'no' => $hs]) . '\', \'_blank\')">';
                 $output .= '<div class="card-body" style="font-size: 14px; display: flex; align-items: center; justify-content: center; height: 100%;">';
                 $output .= '<div>Previous Record</div>';
                 $output .= '</div>';
@@ -1997,16 +2011,37 @@ t.*,
     }
 
 
-    public function actionRegisteredVsUnregisteredVoters($list=null){
-
-        
+    public function actionRegisteredVsUnregisteredVoters($list = null)
+    {
         $queryParams = App::queryParams();
-
-        // $searchModel = new SpecialsurveySearch();
-
-
-         /////////// GRAPH CODE ////////////
-         $data = (new \yii\db\Query())
+    
+        $filteredIds = (new \yii\db\Query())
+            ->select('m.id')
+            ->from(['m' => 'tbl_members'])
+            ->innerJoin(['hs' => 'tbl_households'], 'm.household_id = hs.id')
+            ->innerJoin(['b' => 'tbl_barangays'], 'hs.barangay_id = b.no')
+            ->where(['in', 'm.voter', [0, 2]])
+            ->andFilterWhere(['b.name' => $queryParams['barangay'] ?? null])
+            ->andFilterWhere(['hs.purok_no' => $queryParams['purok'] ?? null])
+            ->andFilterWhere(['hs.no' => $queryParams['household_no'] ?? null])
+            ->orderBy(['b.name' => SORT_ASC, 'm.id' => SORT_ASC])
+            ->column();
+    
+        // If no results, return empty
+        if (empty($filteredIds)) {
+            return $this->renderAjax('@app/views/member/index', [
+                'searchModel' => new MemberSearch(),
+                'dataProvider' => new ActiveDataProvider(['query' => Member::find()->where('0=1')]),
+            ]);
+        }
+    
+        $searchModel = new MemberSearch();
+        $dataProvider = $searchModel->search(['MemberSearch' => $queryParams]);
+        $dataProvider->query->filterWhere(['m.id' => $filteredIds]);
+       
+    
+        // Chart Data Query
+        $data = (new \yii\db\Query())
             ->select([
                 'b.name AS barangay_name',
                 'COUNT(m.id) AS total_population',
@@ -2023,100 +2058,53 @@ t.*,
             ->groupBy(['b.id', 'b.name'])
             ->orderBy(['b.name' => SORT_ASC])
             ->all();
-        
+    
         $barangayLabels = [];
         $registeredData = [];
         $unregisteredData = [];
-        
+    
         foreach ($data as $row) {
             $barangayLabels[] = $row['barangay_name'];
-            $registeredData[] = (int) $row['registered_voters'];
-            $unregisteredData[] = (int) $row['unregistered_voters'];
+            $registeredData[] = (int)$row['registered_voters'];
+            $unregisteredData[] = (int)$row['unregistered_voters'];
         }
-        
-        // Prepare chart data for JS
+    
         $chartData = [
             ['name' => 'Registered Voters', 'data' => $registeredData],
             ['name' => 'Unregistered Voters', 'data' => $unregisteredData]
         ];
+    
+        if($list==1){
+            return $this->asJson(
+                [
+                    'barangayLabels' => json_encode($barangayLabels),
+                    'chartData' => json_encode($chartData),
+                ]
+                );
+        }
         
-
-         // Fix incorrect if condition
-        
-
-         if ($list == 1) {
-            $queryParams = App::queryParams();
-            
-            // Step 1: Get filtered member IDs
-            $filteredIds = (new \yii\db\Query())
-                ->select('m.id')
-                ->from(['m' => 'tbl_members'])
-                ->innerJoin(['hs' => 'tbl_households'], 'm.household_id = hs.id')
-                ->innerJoin(['b' => 'tbl_barangays'], 'hs.barangay_id = b.no')
-                ->where(['in', 'm.voter', [0, 2]]) // Use 'in' for better accuracy
-                ->andFilterWhere(['=', 'b.name', $queryParams['barangay'] ?? null])
-                ->andFilterWhere(['=', 'hs.purok_no', $queryParams['purok'] ?? null])
-                ->orderBy('m.id')
-                ->column();
-
-        
-            // If no results, return empty DataProvider
-            if (empty($filteredIds)) {
-                return $this->renderAjax('@app/views/member/index', [
-                    'searchModel' => new MemberSearch(),
-                    'dataProvider' => new ActiveDataProvider(['query' => Member::find()->where('0=1')]), // Empty result
-                ]);
-            }
-            
-            // Step 2: Apply IDs in the DataProvider query
-            $MemberSearch = new MemberSearch();
-            $dataProvider = $MemberSearch->search(['MemberSearch' => $queryParams]);
-            $dataProvider->query->filterWhere(['m.id' => $filteredIds]); // Ensure this works
-            
-        
-            // Render members list as HTML
-            $membersHtml = $this->renderAjax('@app/views/member/index', [
-                'searchModel' => new MemberSearch(),
+    
+        if (Yii::$app->request->isAjax) {
+            // echo "Ajax";
+            // die();
+            return $this->renderAjax('@app/views/member/index', [
+                'searchModel' => $searchModel,
                 'dataProvider' => $dataProvider,
-            ]);
-            
-            // Return JSON with both the rendered HTML and chart data
-            return $this->asJson([
-                'membersHtml' => $membersHtml, // Table content
-                'barangayLabels' => json_encode($barangayLabels),
-                'chartData' => json_encode($chartData),
-            ]);
-            // return $this->renderAjax('@app/views/member/index', [
-            //     'searchModel' => $MemberSearch,
-            //     'dataProvider' => $dataProvider,
-            // ]);
-        }
-        
-         
-        if(Yii::$app->request->isAjax){
-            return $this->asJson([
-                'barangayLabels' => json_encode($barangayLabels),
-                'chartData' => json_encode($chartData)
+                // 'barangayLabels' => json_encode($barangayLabels),
+                // 'chartData' => json_encode($chartData),
             ]);
         }
-
-        
+    
         return $this->render('registered_vs_unregistered_voters', [
-               
+            'MemberSearch' => $searchModel,
+            'dataProvider' => $dataProvider,
             'barangayLabels' => json_encode($barangayLabels),
             'chartData' => json_encode($chartData),
         ]);
-
-       
-        
     }
+    
 
-    // public actionCanvassingCoverageProgress(){
-
-    // }
-
-
-    public function actionUnregisteredVotersPopulation($criteria = '', $brgy = '', $hs = '')
+    public function actionUnregisteredVotersPopulation( $brgy = '', $hs = '')
     {
         $queryParams = App::queryParams();
 
@@ -2176,7 +2164,7 @@ t.*,
         }
 
         // ———— 3) Main map: unregistered voters only ————
-        $rows = (new \yii\db\Query())
+        $rows  = (new \yii\db\Query())
             ->select([
                 'm.id AS member_id',
                 'm.first_name', 'm.middle_name', 'm.last_name',
@@ -2185,12 +2173,16 @@ t.*,
             ])
             ->from('tbl_members m')
             ->leftJoin('tbl_households h', 'm.household_id = h.id')
-            ->where(['m.voter' => [0,2]])               // only unregistered
-            ->andWhere(['IS NOT', 'h.latitude', null])   // must have coords
-            ->andWhere(['IS NOT', 'h.longitude', null])
-
+            ->leftJoin('tbl_barangays b', 'h.barangay_id = b.id')
+            ->where(['m.voter' => [0, 2]])                        // only unregistered
+            // ->andWhere(['IS NOT', 'h.latitude', null])           // must have coords
+            // ->andWhere(['IS NOT', 'h.longitude', null])
+            ->andFilterWhere([
+                'b.name' => $queryParams['barangay'],            // filter by barangay name
+                'h.purok_no' => $queryParams['purok'],           // filter by purok no
+            ])
             ->all();
-
+    
         $features = [];
         foreach ($rows as $r) {
             $features[] = [
@@ -2198,10 +2190,7 @@ t.*,
                 "properties" => $r,
                 "geometry" => [
                     "type" => "Point",
-                    "coordinates" => [
-                        (float)$r['longitude'],
-                        (float)$r['latitude']
-                    ]
+                    "coordinates" => [$r['longitude'], $r['latitude']]
                 ]
             ];
         }
@@ -2212,6 +2201,10 @@ t.*,
         ]);
     }
 
+
+    // public actionCanvassingCoverageProgress(){
+
+    // }
     
 
 
