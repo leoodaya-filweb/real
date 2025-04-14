@@ -2204,9 +2204,86 @@ t.*,
     }
 
 
-    // public actionCanvassingCoverageProgress(){
+    public function actionCanvassingCoverageProgress()
+    {
+        // Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
-    // }
+        $searchModel = new SpecialsurveySearch();
+        $queryParams = App::queryParams();
+
+        $selectedSurvey = $queryParams['survey_name'] ?? 'Survey 1';
+        $selectedCriteria = $queryParams['criteria'] ?? 1;
+
+        $dataProvider = $searchModel->search(['SpecialsurveySearch' => $queryParams]);
+    
+        // Select only necessary columns & apply grey color filter
+        $dataProvider->query->select([
+            't.*',
+            "(t.criteria{$selectedCriteria}_color_id) as criteria1_color_id"
+        ])->andFilterWhere(['t.survey_name' => $selectedSurvey]);
+
+        // Construct the base query
+        $query = (new \yii\db\Query())
+            ->select([
+                'b.name AS barangay_name',
+                's.survey_name',
+                'COUNT(DISTINCT s.household_no) AS surveyed_households',
+                'COUNT(DISTINCT h.no) AS total_households',
+                'ROUND(COUNT(DISTINCT s.household_no) / COUNT(DISTINCT h.no) * 100, 2) AS survey_coverage_percent',
+            ])
+            ->from('tbl_barangays b')
+            ->leftJoin('tbl_households h', 'b.no = h.barangay_id')
+            ->leftJoin(
+                'tbl_specialsurvey s',
+                's.barangay = b.name AND s.household_no = h.no AND s.survey_name = :survey_name'
+            )
+            ->addParams([':survey_name' => $selectedSurvey]);
+
+        // Group and order the results
+        $query->groupBy('b.name')
+            ->orderBy('b.name');
+
+        // Fetch the results
+        $results  = $query->all();
+
+        
+        
+        // Prepare data for the chart
+        $chartData = [];
+        $barangayNames = [];
+        foreach ($results as $row) {
+            $chartData[] = (float)$row['survey_coverage_percent'];
+            $barangayNames[] = $row['barangay_name'];
+        }
+
+        if(Yii::$app->request->isAjax) {
+            return $this->asJson([
+                // 'success' => true,
+                // 'filters' => [
+                //     'survey_name' => $selectedSurvey,
+                //     'criteria' => $selectedCriteria,
+                // ],
+                'chartData' => json_encode($chartData),  // Encode to JSON for JS
+                
+            ]);
+    
+        }
+
+        return $this->render('canvassing_coverage_progress', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+            'chartData' => json_encode($results),  // Encode to JSON for JS
+
+        ]);
+
+        
+    }
+
+
+    public function actionProjectTurnout(){
+
+        return $this->render('project_turnout');
+    }
     
 
 

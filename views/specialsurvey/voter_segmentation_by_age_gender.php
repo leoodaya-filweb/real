@@ -42,7 +42,8 @@
             const maleCounts = $encodedMaleData;
             const femaleCounts = $encodedFemaleData;
 
-           
+            console.log(ageLabels,maleCounts,femaleCounts);
+            
             
             renderChart(ageLabels,maleCounts, femaleCounts);
 
