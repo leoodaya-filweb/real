@@ -112,7 +112,7 @@ foreach ($barangays as $barangay) {
         $barangayChartData[1]['data'][] = $series['blue'][$barangay][$purok] ?? 0;
         $barangayChartData[2]['data'][] = $series['blackX'][$barangay][$purok] ?? 0;
         $barangayChartData[3]['data'][] = $series['blackY'][$barangay][$purok] ?? 0;
-        $barangayChartData[3]['data'][] = $series['blackU'][$barangay][$purok] ?? 0;
+        $barangayChartData[4]['data'][] = $series['blackU'][$barangay][$purok] ?? 0;
     }
 
     $chart_data[$barangay] = json_encode($barangayChartData);
