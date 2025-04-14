@@ -1411,6 +1411,8 @@ t.*,
     
         $mdata = $dataProvider->getModels();
         $barangay_data = ArrayHelper::index($mdata, 'barangay');
+
+       
         $address = App::setting('address');
     
         $coordinates = BarangayCoordinates::find()
@@ -1445,32 +1447,32 @@ t.*,
        
         foreach ($coordinates as $row) {
             $coordinates = json_decode($row['coordinates'], true);
-            $total_black = $barangay_data[$row['barangay']]["criteria{$criteria}_color_black"] ?? 0;
-            $total_gray = $barangay_data[$row['barangay']]["criteria{$criteria}_color_gray"] ?? 0;
-            $total_green = $barangay_data[$row['barangay']]["criteria{$criteria}_color_green"] ?? 0;
-            $total_red = $barangay_data[$row['barangay']]["criteria{$criteria}_color_red"] ?? 0;
-
-            $barangay_colors = [
-                1 => $total_black,
-                2 => $total_gray,
-                3 => $total_green,
-                4 => $total_red
-            ];
-
-            // $total_blue = $barangay_data[$row['barangay']]["criteria{$criteria}_color_blue"] ?? 0;
+            // $total_black = $barangay_data[$row['barangay']]["criteria{$criteria}_color_black"] ?? 0;
             // $total_gray = $barangay_data[$row['barangay']]["criteria{$criteria}_color_gray"] ?? 0;
-            // $total_blackx = $barangay_data[$row['barangay']]["criteria{$criteria}_color_blackx"] ?? 0;
-            // $total_blacky = $barangay_data[$row['barangay']]["criteria{$criteria}_color_blacky"] ?? 0;
-            // $total_blacku = $barangay_data[$row['barangay']]["criteria{$criteria}_color_blacku"] ?? 0;
-
+            // $total_green = $barangay_data[$row['barangay']]["criteria{$criteria}_color_green"] ?? 0;
+            // $total_red = $barangay_data[$row['barangay']]["criteria{$criteria}_color_red"] ?? 0;
 
             // $barangay_colors = [
-            //     1 => $total_blue,
+            //     1 => $total_black,
             //     2 => $total_gray,
-            //     3 => $total_blackx,
-            //     4 => $total_blacky,
-            //     5=> $total_blacku,
+            //     3 => $total_green,
+            //     4 => $total_red
             // ];
+
+            $total_blue = $barangay_data[$row['barangay']]["criteria{$criteria}_color_blue"] ?? 0;
+            $total_gray = $barangay_data[$row['barangay']]["criteria{$criteria}_color_gray"] ?? 0;
+            $total_blackx = $barangay_data[$row['barangay']]["criteria{$criteria}_color_blackx"] ?? 0;
+            $total_blacky = $barangay_data[$row['barangay']]["criteria{$criteria}_color_blacky"] ?? 0;
+            $total_blacku = $barangay_data[$row['barangay']]["criteria{$criteria}_color_blacku"] ?? 0;
+
+
+            $barangay_colors = [
+                1 => $total_blue,
+                2 => $total_gray,
+                3 => $total_blackx,
+                4 => $total_blacky,
+                5=> $total_blacku,
+            ];
 
             arsort($barangay_colors);
             $dominant_color_id = key($barangay_colors);
@@ -1482,7 +1484,7 @@ t.*,
 
             // Ensure correct filtering logic
             if (!empty($color_survey) && !in_array($dominant_color_id, $color_survey)) {
-                $dominant_color = "#ffffff"; // Default color for excluded barangays
+                $dominant_color = "#FFFFFF"; // Default color for excluded barangays
             }
 
             $household_colors = [];

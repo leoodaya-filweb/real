@@ -304,34 +304,68 @@ class SpecialsurveySearch extends Specialsurvey
                 ,  
         ]);
 		
-		$query->select([
-    		"t.barangay",
-    		"t.purok",
-    		"sum(t.criteria1_color_id=1) as criteria1_color_black",
-    		"sum(t.criteria1_color_id=2) as criteria1_color_gray",
-    		"sum(t.criteria1_color_id=3) as criteria1_color_green",
-    		"sum(t.criteria1_color_id=4) as criteria1_color_red",
+		// $query->select([
+    	// 	"t.barangay",
+    	// 	"t.purok",
+    	// 	"sum(t.criteria1_color_id=1) as criteria1_color_black",
+    	// 	"sum(t.criteria1_color_id=2) as criteria1_color_gray",
+    	// 	"sum(t.criteria1_color_id=3) as criteria1_color_green",
+    	// 	"sum(t.criteria1_color_id=4) as criteria1_color_red",
     		
-    		"sum(t.criteria2_color_id=1) as criteria2_color_black",
-    		"sum(t.criteria2_color_id=2) as criteria2_color_gray",
-    		"sum(t.criteria2_color_id=3) as criteria2_color_green",
-    		"sum(t.criteria2_color_id=4) as criteria2_color_red",
+    	// 	"sum(t.criteria2_color_id=1) as criteria2_color_black",
+    	// 	"sum(t.criteria2_color_id=2) as criteria2_color_gray",
+    	// 	"sum(t.criteria2_color_id=3) as criteria2_color_green",
+    	// 	"sum(t.criteria2_color_id=4) as criteria2_color_red",
     		
-    		"sum(t.criteria3_color_id=1) as criteria3_color_black",
-    		"sum(t.criteria3_color_id=2) as criteria3_color_gray",
-    		"sum(t.criteria3_color_id=3) as criteria3_color_green",
-    		"sum(t.criteria3_color_id=4) as criteria3_color_red",
+    	// 	"sum(t.criteria3_color_id=1) as criteria3_color_black",
+    	// 	"sum(t.criteria3_color_id=2) as criteria3_color_gray",
+    	// 	"sum(t.criteria3_color_id=3) as criteria3_color_green",
+    	// 	"sum(t.criteria3_color_id=4) as criteria3_color_red",
     		
-    		"sum(t.criteria4_color_id=1) as criteria4_color_black",
-    		"sum(t.criteria4_color_id=2) as criteria4_color_gray",
-    		"sum(t.criteria4_color_id=3) as criteria4_color_green",
-    		"sum(t.criteria4_color_id=4) as criteria4_color_red",
+    	// 	"sum(t.criteria4_color_id=1) as criteria4_color_black",
+    	// 	"sum(t.criteria4_color_id=2) as criteria4_color_gray",
+    	// 	"sum(t.criteria4_color_id=3) as criteria4_color_green",
+    	// 	"sum(t.criteria4_color_id=4) as criteria4_color_red",
     		
-    		"sum(t.criteria5_color_id=1) as criteria5_color_black",
-    		"sum(t.criteria5_color_id=2) as criteria5_color_gray",
-    		"sum(t.criteria5_color_id=3) as criteria5_color_green",
-    		"sum(t.criteria5_color_id=4) as criteria5_color_red",
-		]);
+    	// 	"sum(t.criteria5_color_id=1) as criteria5_color_black",
+    	// 	"sum(t.criteria5_color_id=2) as criteria5_color_gray",
+    	// 	"sum(t.criteria5_color_id=3) as criteria5_color_green",
+    	// 	"sum(t.criteria5_color_id=4) as criteria5_color_red",
+		// ]);
+
+        $query->select([
+            "t.barangay",
+            "t.purok",
+            "sum(t.criteria1_color_id=1) as criteria1_color_blue",
+            "sum(t.criteria1_color_id=2) as criteria1_color_gray",
+            "sum(t.criteria1_color_id=3) as criteria1_color_blackx",
+            "sum(t.criteria1_color_id=4) as criteria1_color_blacky",
+            "sum(t.criteria1_color_id=5) as criteria1_color_blacku",
+            
+            "sum(t.criteria2_color_id=1) as criteria2_color_blue",
+            "sum(t.criteria2_color_id=2) as criteria2_color_gray",
+            "sum(t.criteria2_color_id=3) as criteria2_color_blackx",
+            "sum(t.criteria2_color_id=4) as criteria2_color_blacky",
+            "sum(t.criteria2_color_id=5) as criteria2_color_blacku",
+            
+            "sum(t.criteria3_color_id=1) as criteria3_color_blue",
+            "sum(t.criteria3_color_id=2) as criteria3_color_gray",
+            "sum(t.criteria3_color_id=3) as criteria3_color_blackx",
+            "sum(t.criteria3_color_id=4) as criteria3_color_blacky",
+            "sum(t.criteria3_color_id=5) as criteria3_color_blacku",
+            
+            "sum(t.criteria4_color_id=1) as criteria4_color_blue",
+            "sum(t.criteria4_color_id=2) as criteria4_color_gray",
+            "sum(t.criteria4_color_id=3) as criteria4_color_blackx",
+            "sum(t.criteria4_color_id=4) as criteria4_color_blacky",
+            "sum(t.criteria4_color_id=5) as criteria4_color_blacku",
+            
+            "sum(t.criteria5_color_id=1) as criteria5_color_blue",
+            "sum(t.criteria5_color_id=2) as criteria5_color_gray",
+            "sum(t.criteria5_color_id=3) as criteria5_color_blackx",
+            "sum(t.criteria5_color_id=4) as criteria5_color_blacky",
+            "sum(t.criteria5_color_id=5) as criteria5_color_blacku",
+        ]);
 
 		if(($this->barangay && $this->purok) || $this->groupPurok) {
             $query->groupby(["t.barangay", "t.purok"]);	
