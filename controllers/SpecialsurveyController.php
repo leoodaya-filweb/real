@@ -2204,14 +2204,14 @@ t.*,
     }
 
 
-    public function actionCanvassingCoverageProgress()
+    public function actionCanvassingCoverageProgress($list= null)
     {
         // Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
         $searchModel = new SpecialsurveySearch();
         $queryParams = App::queryParams();
 
-        $selectedSurvey = $queryParams['survey_name'] ?? 'Survey 1';
+        $selectedSurvey = $queryParams['survey_name'] ?? 'Survey 5';
         $selectedCriteria = $queryParams['criteria'] ?? 1;
 
         $dataProvider = $searchModel->search(['SpecialsurveySearch' => $queryParams]);
@@ -2248,22 +2248,29 @@ t.*,
 
         
         
-        // Prepare data for the chart
-        $chartData = [];
-        $barangayNames = [];
-        foreach ($results as $row) {
-            $chartData[] = (float)$row['survey_coverage_percent'];
-            $barangayNames[] = $row['barangay_name'];
+        // // Prepare data for the chart
+        // $chartData = [];
+        // $barangayNames = [];
+        // foreach ($results as $row) {
+        //     $chartData[] = (float)$row['survey_coverage_percent'];
+        //     $barangayNames[] = $row['barangay_name'];
+        // }
+
+        if($list == 1){
+            return $this->renderAjax('index_list',[
+                'dataProvider'=> $dataProvider,
+                'searchModel' => $searchModel
+            ]);
         }
 
         if(Yii::$app->request->isAjax) {
             return $this->asJson([
-                // 'success' => true,
-                // 'filters' => [
-                //     'survey_name' => $selectedSurvey,
-                //     'criteria' => $selectedCriteria,
-                // ],
-                'chartData' => json_encode($chartData),  // Encode to JSON for JS
+                'success' => true,
+                'filters' => [
+                    'survey_name' => $selectedSurvey,
+                    'criteria' => $selectedCriteria,
+                ],
+                'chartData' => json_encode($results),  // Encode to JSON for JS
                 
             ]);
     

@@ -37,38 +37,47 @@ use yii\web\View;
             
 
             $('.filter-select').change(function () {
-                var barangay = $('#select-survey').val();
+                var survey_name = $('#select-survey').val();
                 var criteria = $('#select-criteria').val();
 
-                var selectedPurok = $('#select-purok').val();
-                if ($(this).attr('id') === 'select-barangay') {
-                    selectedPurok = ""; // Reset purok if barangay changes
-                }
+                
 
                 $.ajax({
-                    url: '/real/web/specialsurvey/voter-segmentation-by-sector',
+                    url: '/real/web/specialsurvey/canvassing-coverage-progress',
                     method: 'get',
-                    data: { barangay, purok: selectedPurok, criteria, color },
+                    data: { survey_name, criteria },
                     success: function (response) {
-                    const data = JSON.parse(response.chart_data_json);
-                    const label = JSON.parse(response.color_labels_json);
-                    renderChart(data, label);
+                        const data = JSON.parse(response.chartData);
+                        console.log(data);
+                        
+                       
+                        renderChart(data);
 
 
-                        $("#select-purok").html('<option value="" selected>Select..</option>');
-
-                        let purokExists = false;
-
-                        $.each(response.purok, function (key, value) {
-                            let isSelected = selectedPurok === value.purok ? 'selected' : '';
-                            if (isSelected) purokExists = true;
-                            $("#select-purok").append('<option value="' + value.purok + '" ' + isSelected + '>' + value.purok + '</option>');
-                        });
+                      
 
                        
-                        if (!purokExists) {
-                            $("#select-purok").val(""); // Reset to "Select.."
-                        }
+
+                       
+                    },
+                    error: function (e) {
+                        console.log('AJAX error', e);
+                    }
+                });
+
+                $.ajax({
+                    url: '/real/web/specialsurvey/canvassing-coverage-progress?list=1',
+                    method: 'get',
+                    data: { survey_name, criteria },
+                    success: function (response) {
+                        
+                        $('#voters-list').html("");
+                        $('#voters-list').html(response);
+
+
+                      
+
+                       
 
                        
                     },
@@ -105,8 +114,20 @@ use yii\web\View;
                     type: 'bar',
                     height: 100 + (labels.length * 35),
                     toolbar: { show: false },
-                    background: '#f4f6f9',  // Light background color
-                },
+                    // background: '#f4f6f9',  // Light background color
+                    // padding: {
+                    //     top: 20,
+                    //     right: 50,
+                    //     bottom: 20,
+                    //     left: 20
+                    // },
+                    // margin: {
+                    //     top: 10,
+                    //     right: 50,
+                    //     bottom: 10,
+                    //     left: 10
+                    // }
+                },        
                 plotOptions: {
                     bar: {
                         horizontal: true,
@@ -245,7 +266,7 @@ use yii\web\View;
     
             
             <div class="ml-5">
-                <select class="form-control" id="select-survey">
+                <select class="form-control filter-select" id="select-survey">
                     <?=  Html::tag('option', 'Select Survey', [
                         'value' => '',
                         'selected' => true,
@@ -253,15 +274,20 @@ use yii\web\View;
                     ]) ?>
                     <?= Html::foreach(Specialsurvey::filter('survey_name'), function($name) {
                     
+                        $isLastSurvey = $name === end(Specialsurvey::filter('survey_name')); // Check if it's the last survey
                         return Html::tag('option', $name, [
                             'value' => $name,
-                            'selected' => false
+                            'selected' => $isLastSurvey, // Auto-select the last survey
                         ]);
+                        // return Html::tag('option', $name, [
+                        //     'value' => $name,
+                        //     'selected' => false
+                        // ]);
                     }) ?>
                 </select>
             </div>
             <div class="ml-5">
-                <select class="form-control" id="select-criteria">
+                <select class="form-control filter-select" id="select-criteria">
                     <?= Html::foreach([1, 2, 3, 4, 5], function($n) {
                         return Html::tag('option', "Criteria {$n}", [
                             'value' => $n,
@@ -292,12 +318,10 @@ use yii\web\View;
 
     <!-- Chart Section -->
     <h2>Progress Bar graph  </h2>
-    <div id="progressBarGraph" style="height: 500px; width: 100%; "></div>
+    <div id="progressBarGraph" style="height: 500px; width: auto; "></div>
 
 
-    <h2>List</h2>
-
-    <div id="content-listing">
+    <div id="voters-list">
         <?= Html::beginForm(['bulk-action'], 'post'); ?>
             <?= BulkAction::widget(['searchModel' => $searchModel]) ?>
             <?= Grid::widget([
