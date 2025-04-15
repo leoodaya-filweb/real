@@ -30,56 +30,67 @@ use yii\web\View;
   
     $this->registerJs(<<<JS
          
-        $(document).ready(function () {
+         $(document).ready(function () {
+
+             // Function to get URL parameters
+            function getUrlParam(param) {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get(param);
+            }
+
+            // Preselect survey and criteria based on URL
+            const surveyName = getUrlParam('survey_name') ?? $('#select-survey').val();
+            const criteria = getUrlParam('criteria') ?? $('#select-criteria').val();
+
+            if (surveyName) {
+                $('#select-survey').val(surveyName);
+            }
+
+            if (criteria) {
+                $('#select-criteria').val(criteria);
+            }
+
+            if (window.location.search.includes('list=1')) {
+                const newUrl = window.location.href.replace(/(\?|&)list=1(&|$)/, '$1').replace(/[?&]$/, '');
+                window.history.replaceState({}, '', newUrl);
+            }
+
             renderChart({$chartData});
-          
-            
-            
 
             $('.filter-select').change(function () {
                 var survey_name = $('#select-survey').val();
                 var criteria = $('#select-criteria').val();
 
-                
-
+                // First AJAX: voters list
                 $.ajax({
-                    url: '/real/web/specialsurvey/canvassing-coverage-progress',
+                    url: '/real/web/specialsurvey/canvassing-coverage-progress?list=1',
                     method: 'get',
                     data: { survey_name, criteria },
                     success: function (response) {
-                        const data = JSON.parse(response.chartData);
-                        console.log(data);
-                        
-                       
-                        renderChart(data);
+                        $('#voters-list').html(response);
 
-
-                      
-
-                       
-
-                       
+                        // Clean up pagination URLs
+                        $('#voters-list a').each(function () {
+                            const href = $(this).attr('href');
+                            if (href && href.includes('list=1')) {
+                                const cleaned = href.replace(/(\?|&)list=1(&|$)/, '$1').replace(/[?&]$/, '');
+                                $(this).attr('href', cleaned);
+                            }
+                        });
                     },
                     error: function (e) {
                         console.log('AJAX error', e);
                     }
                 });
 
+                // Second AJAX: chart
                 $.ajax({
-                    url: '/real/web/specialsurvey/canvassing-coverage-progress?list=1',
+                    url: '/real/web/specialsurvey/canvassing-coverage-progress',
                     method: 'get',
                     data: { survey_name, criteria },
                     success: function (response) {
-                        
-                        $('#voters-list').html("");
-                        $('#voters-list').html(response);
-
-
-                      
-
-                       
-
-                       
+                        const data = JSON.parse(response.chartData);
+                        renderChart(data);
                     },
                     error: function (e) {
                         console.log('AJAX error', e);
@@ -87,6 +98,7 @@ use yii\web\View;
                 });
             });
         });
+
 
         let chart;
         function renderChart(chart_data_json) {
@@ -238,22 +250,6 @@ use yii\web\View;
             chart.render();
         }
 
-
-
-
-
-
-
-
-
-
-   
-
-        
-
-
-
-        
     JS);
     ?>
 
@@ -332,6 +328,8 @@ use yii\web\View;
       
                     
     </div>
+
+    
     
 
 

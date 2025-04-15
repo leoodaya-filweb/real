@@ -2211,7 +2211,7 @@ t.*,
         $searchModel = new SpecialsurveySearch();
         $queryParams = App::queryParams();
 
-        $selectedSurvey = $queryParams['survey_name'] ?? 'Survey 5';
+        $selectedSurvey = $queryParams['survey_name'] ?? "Survey 5";
         $selectedCriteria = $queryParams['criteria'] ?? 1;
 
         $dataProvider = $searchModel->search(['SpecialsurveySearch' => $queryParams]);
@@ -2257,11 +2257,14 @@ t.*,
         // }
 
         if($list == 1){
+            $list=0;
             return $this->renderAjax('index_list',[
                 'dataProvider'=> $dataProvider,
                 'searchModel' => $searchModel
             ]);
         }
+
+       
 
         if(Yii::$app->request->isAjax) {
             return $this->asJson([
