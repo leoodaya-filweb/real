@@ -66,6 +66,7 @@ use yii\web\View;
                     url: '/real/web/specialsurvey/canvassing-coverage-progress?list=1',
                     method: 'get',
                     data: { survey_name, criteria },
+                    dataType: 'html',
                     success: function (response) {
                         $('#voters-list').html(response);
 

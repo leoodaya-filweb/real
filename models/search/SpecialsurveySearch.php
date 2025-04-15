@@ -385,6 +385,144 @@ class SpecialsurveySearch extends Specialsurvey
 
         return $dataProvider;
     }
+
+    public function searchSummaryForUnregisteredVoters($params)
+    {
+        $query = Specialsurvey::find()->alias('t');
+
+        $this->load($params);
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => ['pageSize' => $this->pagination]
+        ]);
+
+        if (!$this->validate()) {
+            $query->where('0=1');
+            return $dataProvider;
+        }
+
+        // Join members table by name fields
+        $query->innerJoin(['m' => 'tbl_members'], '
+            LOWER(TRIM(m.last_name)) = LOWER(TRIM(t.last_name)) AND
+            LOWER(TRIM(m.first_name)) = LOWER(TRIM(t.first_name)) AND
+            LOWER(TRIM(m.middle_name)) = LOWER(TRIM(t.middle_name))
+        ');
+
+        // Only include unregistered voters
+        $query->andWhere(['m.voter' => [0, 2]]);
+
+        // Grid filtering conditions
+        $query->andFilterWhere([
+            't.id' => $this->id,
+            't.age' => $this->age,
+            't.date_of_birth' => $this->date_of_birth,
+            't.criteria1_color_id' => $this->criteria1_color_id,
+            't.criteria2_color_id' => $this->criteria2_color_id,
+            't.criteria3_color_id' => $this->criteria3_color_id,
+            't.criteria4_color_id' => $this->criteria4_color_id,
+            't.criteria5_color_id' => $this->criteria5_color_id,
+            't.barangay' => $this->barangay,
+            't.purok' => trim($this->purok),
+            't.survey_name' => $this->survey_name,
+            't.household_no' => $this->household_no,
+            't.record_status' => $this->record_status,
+            't.created_by' => $this->created_by,
+            't.created_at' => $this->created_at,
+            't.updated_by' => $this->updated_by,
+            't.updated_at' => $this->updated_at,
+        ]);
+
+        $query->andFilterWhere(['like', 't.last_name', $this->last_name])
+            ->andFilterWhere(['like', 't.first_name', $this->first_name])
+            ->andFilterWhere(['like', 't.middle_name', $this->middle_name])
+            ->andFilterWhere(['like', 't.gender', $this->gender])
+            ->andFilterWhere(['like', 't.civil_status', $this->civil_status])
+            ->andFilterWhere(['like', 't.house_no', $this->house_no])
+            ->andFilterWhere(['like', 't.sitio', $this->sitio])
+            ->andFilterWhere(['like', 't.barangay', $this->barangay])
+            ->andFilterWhere(['like', 't.municipality', $this->municipality])
+            ->andFilterWhere(['like', 't.province', $this->province])
+            ->andFilterWhere(['like', 't.religion', $this->religion])
+            ->andFilterWhere(['like', 't.remarks', $this->remarks]);
+
+        $query->andFilterWhere(['or',
+            ['like', 't.last_name', $this->keywords],
+            ['like', 't.first_name', $this->keywords],
+            ['like', 't.middle_name', $this->keywords],
+            ['like', 't.gender', $this->keywords],
+            ['like', 't.age', $this->keywords],
+            ['like', 't.date_of_birth', $this->keywords],
+            ['like', 't.civil_status', $this->keywords],
+            ['like', 't.house_no', $this->keywords],
+            ['like', 't.sitio', $this->keywords],
+            ['like', 't.barangay', $this->keywords],
+            ['like', 't.municipality', $this->keywords],
+            ['like', 't.province', $this->keywords],
+            ['like', 't.religion', $this->keywords],
+            ['like', 't.remarks', $this->keywords],
+            ['like', 't.house_no', $this->keywords],
+            ['like', 'survey_name', $this->keywords],
+            ['like', 'CONCAT(t.first_name, " ", t.last_name)', $this->keywords],
+            ['like', 'CONCAT(t.last_name, " ", t.first_name)', $this->keywords],
+            ['like', 'CONCAT(t.first_name, " ", t.middle_name, " ", t.last_name)', $this->keywords],
+            ['like', 'CONCAT(t.last_name, " ", t.middle_name, " ", t.first_name)', $this->keywords]
+        ]);
+
+        // Color summary (unregistered only)
+        $query->select([
+            "t.barangay",
+            "t.purok",
+            "sum(t.criteria1_color_id=1) as criteria1_color_blue",
+            "sum(t.criteria1_color_id=2) as criteria1_color_gray",
+            "sum(t.criteria1_color_id=3) as criteria1_color_blackx",
+            "sum(t.criteria1_color_id=4) as criteria1_color_blacky",
+            "sum(t.criteria1_color_id=5) as criteria1_color_blacku",
+            
+            "sum(t.criteria2_color_id=1) as criteria2_color_blue",
+            "sum(t.criteria2_color_id=2) as criteria2_color_gray",
+            "sum(t.criteria2_color_id=3) as criteria2_color_blackx",
+            "sum(t.criteria2_color_id=4) as criteria2_color_blacky",
+            "sum(t.criteria2_color_id=5) as criteria2_color_blacku",
+            
+            "sum(t.criteria3_color_id=1) as criteria3_color_blue",
+            "sum(t.criteria3_color_id=2) as criteria3_color_gray",
+            "sum(t.criteria3_color_id=3) as criteria3_color_blackx",
+            "sum(t.criteria3_color_id=4) as criteria3_color_blacky",
+            "sum(t.criteria3_color_id=5) as criteria3_color_blacku",
+            
+            "sum(t.criteria4_color_id=1) as criteria4_color_blue",
+            "sum(t.criteria4_color_id=2) as criteria4_color_gray",
+            "sum(t.criteria4_color_id=3) as criteria4_color_blackx",
+            "sum(t.criteria4_color_id=4) as criteria4_color_blacky",
+            "sum(t.criteria4_color_id=5) as criteria4_color_blacku",
+            
+            "sum(t.criteria5_color_id=1) as criteria5_color_blue",
+            "sum(t.criteria5_color_id=2) as criteria5_color_gray",
+            "sum(t.criteria5_color_id=3) as criteria5_color_blackx",
+            "sum(t.criteria5_color_id=4) as criteria5_color_blacky",
+            "sum(t.criteria5_color_id=5) as criteria5_color_blacku",
+        ]);
+
+        // Grouping logic
+        if (($this->barangay && $this->purok) || $this->groupPurok) {
+            $query->groupBy(['t.barangay', 't.purok']);
+        } else {
+            $query->groupBy(['t.barangay']);
+        }
+
+        $query->orderBy([
+            't.barangay' => SORT_ASC,
+            't.purok' => SORT_ASC,
+            't.created_at' => SORT_DESC
+        ]);
+
+        $query->daterange($this->date_range);
+        $query->asArray();
+
+        return $dataProvider;
+    }
+
 	
 
     public function getRowSummary($dataProvider)
