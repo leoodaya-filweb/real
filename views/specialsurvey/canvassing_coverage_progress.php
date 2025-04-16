@@ -41,6 +41,7 @@ use yii\web\View;
             // Preselect survey and criteria based on URL
             const surveyName = getUrlParam('survey_name') ?? $('#select-survey').val();
             const criteria = getUrlParam('criteria') ?? $('#select-criteria').val();
+            const color = getUrlParam('color_survey') ?? $('#select-color').val();
 
             if (surveyName) {
                 $('#select-survey').val(surveyName);
@@ -48,6 +49,10 @@ use yii\web\View;
 
             if (criteria) {
                 $('#select-criteria').val(criteria);
+            }
+
+            if (color) {
+                $('#select-color').val(color);
             }
 
             if (window.location.search.includes('list=1')) {
@@ -60,12 +65,13 @@ use yii\web\View;
             $('.filter-select').change(function () {
                 var survey_name = $('#select-survey').val();
                 var criteria = $('#select-criteria').val();
+                var color = $('#select-color').val();
 
                 // First AJAX: voters list
                 $.ajax({
                     url: '/real/web/specialsurvey/canvassing-coverage-progress?list=1',
                     method: 'get',
-                    data: { survey_name, criteria },
+                    data: { survey_name, criteria,  color},
                     dataType: 'html',
                     success: function (response) {
                         $('#voters-list').html(response);
@@ -88,7 +94,7 @@ use yii\web\View;
                 $.ajax({
                     url: '/real/web/specialsurvey/canvassing-coverage-progress',
                     method: 'get',
-                    data: { survey_name, criteria },
+                    data: { survey_name, criteria, color },
                     success: function (response) {
                         const data = JSON.parse(response.chartData);
                         renderChart(data);
@@ -295,7 +301,16 @@ use yii\web\View;
             </div>
           
             
-            
+            <div class="ml-5">
+                <select class="form-control filter-select" id="select-color">
+                    <option value="" selected>All Colors</option>
+                    <?php foreach ($colorData as $id => $name): ?>
+                       
+                            <option value="<?= $id ?>"><?= $name ?></option>
+                      
+                    <?php endforeach; ?>
+                </select>
+            </div>
             
             
             

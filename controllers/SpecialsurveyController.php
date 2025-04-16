@@ -2142,49 +2142,7 @@ t.*,
             ]);
         }
         
-        
 
-        // // Chart Data Query
-        // $data = (new \yii\db\Query())
-        //     ->select([
-        //         'b.name AS barangay_name',
-        //         'COUNT(s.id) AS total_surveys',
-        //         'SUM(CASE WHEN m.voter = 1 THEN 1 ELSE 0 END) AS registered_voters',
-        //         'SUM(CASE WHEN m.voter IN (0, 2) THEN 1 ELSE 0 END) AS unregistered_voters'
-        //     ])
-        //     ->from(['s' => 'tbl_specialsurvey'])
-        //     ->innerJoin(['m' => 'tbl_members'],
-        //         'LOWER(TRIM(m.last_name)) = LOWER(TRIM(s.last_name)) AND ' .
-        //         'LOWER(TRIM(m.first_name)) = LOWER(TRIM(s.first_name)) AND ' .
-        //         'LOWER(TRIM(m.middle_name)) = LOWER(TRIM(s.middle_name))'
-        //     )
-        //     ->innerJoin(['h' => 'tbl_households'], 'm.household_id = h.id')
-        //     ->innerJoin(['b' => 'tbl_barangays'], 'h.barangay_id = b.no')
-        //     ->where(['m.voter' => [0, 1, 2]])
-        //     ->andFilterWhere(['b.name' => $queryParams['barangay'] ?? null])
-        //     ->andFilterWhere(['h.purok_no' => $queryParams['purok'] ?? null])
-        //     ->andFilterWhere(['s.survey_name' => $queryParams['survey_name'] ?? null])
-        //     ->andFilterWhere(['s.criteria'.$criteria.'_color_id' => $color_survey])
-
-        //     ->groupBy(['b.id', 'b.name'])
-        //     ->orderBy(['b.name' => SORT_ASC])
-        //     ->all();
-
-        // $barangayLabels = [];
-        // $registeredData = [];
-        // $unregisteredData = [];
-    
-        // foreach ($data as $row) {
-        //     $barangayLabels[] = $row['barangay_name'];
-        //     $registeredData[] = (int)$row['registered_voters'];
-        //     $unregisteredData[] = (int)$row['unregistered_voters'];
-        // }
-    
-        // $chartData = [
-        //     ['name' => 'Registered Voters', 'data' => $registeredData],
-        //     ['name' => 'Unregistered Voters', 'data' => $unregisteredData]
-        // ];
-    
        
         if (Yii::$app->request->isAjax) {
           
@@ -2219,103 +2177,7 @@ t.*,
        
     }
 
-    // public function actionUnregisteredVotersPopulation( $brgy = '', $hs = '')
-    // {
-    //     $queryParams = App::queryParams();
-
-    //     // ———— 1) Single-household popup ————
-    //     if ($hs) {
-    //         $household = Household::find()->where(['no' => $hs])->one();
-    //         if (!$household) {
-    //             return "Household not found.";
-    //         }
-
-    //         $familyHead = Member::find()
-    //             ->where(['household_id' => $household->id, 'head' => 1])
-    //             ->one();
-    //         if (!$familyHead) {
-    //             return "Family Head not found.";
-    //         }
-
-    //         // Count unregistered voters in this household
-    //         $count = (new \yii\db\Query())
-    //             ->from('tbl_members')
-    //             ->where(['household_id' => $household->id])
-    //             ->andWhere(['voter' => [0, 2]])
-    //             ->count();
-
-    //         return "
-    //             <div>
-    //                 Family Head: " . 
-    //                     ucfirst(strtolower($familyHead->last_name)) . ", " .
-    //                     ucfirst(strtolower($familyHead->first_name)) . " " .
-    //                     ucfirst(strtolower($familyHead->middle_name)) . "<br/>
-    //                 Unregistered Voters: {$count}
-    //             </div>
-    //         ";
-    //     }
-
-    //     // ———— 2) brgy=1: return all barangays as before ————
-    //     if ($brgy == 1) {
-    //         $features = [];
-    //         foreach (Barangay::find()->all() as $row) {
-    //             $features[] = [
-    //                 "type" => "Feature",
-    //                 "properties" => [
-    //                     "id" => $row->id,
-    //                     "name" => $row->name,
-    //                 ],
-    //                 "geometry" => [
-    //                     "type" => "Point",
-    //                     "coordinates" => [(float)$row->longitude, (float)$row->latitude]
-    //                 ]
-    //             ];
-    //         }
-
-    //         return $this->asJsonNumeric([
-    //             "type" => "FeatureCollection",
-    //             "features" => $features,
-    //         ]);
-    //     }
-
-    //     // ———— 3) Main map: unregistered voters only ————
-    //     $rows  = (new \yii\db\Query())
-    //         ->select([
-    //             'm.id AS member_id',
-    //             'm.first_name', 'm.middle_name', 'm.last_name',
-    //             'h.latitude', 'h.longitude',
-    //             'h.no as household_no'
-    //         ])
-    //         ->from('tbl_members m')
-    //         ->leftJoin('tbl_households h', 'm.household_id = h.id')
-    //         ->leftJoin('tbl_barangays b', 'h.barangay_id = b.id')
-    //         ->where(['m.voter' => [0, 2]])                        // only unregistered
-    //         // ->andWhere(['IS NOT', 'h.latitude', null])           // must have coords
-    //         // ->andWhere(['IS NOT', 'h.longitude', null])
-    //         ->andFilterWhere([
-    //             'b.name' => $queryParams['barangay'],            // filter by barangay name
-    //             'h.purok_no' => $queryParams['purok'],           // filter by purok no
-    //         ])
-    //         ->all();
-    
-    //     $features = [];
-    //     foreach ($rows as $r) {
-    //         $features[] = [
-    //             "type" => "Feature",
-    //             "properties" => $r,
-    //             "geometry" => [
-    //                 "type" => "Point",
-    //                 "coordinates" => [$r['longitude'], $r['latitude']]
-    //             ]
-    //         ];
-    //     }
-
-    //     return $this->asJsonNumeric([
-    //         "type" => "FeatureCollection",
-    //         "features" => $features,
-    //     ]);
-    // }
-
+   
 
     public function actionCanvassingCoverageProgress($list= null)
     {
@@ -2326,6 +2188,7 @@ t.*,
 
         $selectedSurvey = $queryParams['survey_name'] ?? "Survey 5";
         $selectedCriteria = $queryParams['criteria'] ?? 1;
+        $color_survey = $queryParams['color']??null;
 
         $dataProvider = $searchModel->search(['SpecialsurveySearch' => $queryParams]);
     
@@ -2333,7 +2196,8 @@ t.*,
         $dataProvider->query->select([
             't.*',
             "(t.criteria{$selectedCriteria}_color_id) as criteria1_color_id"
-        ])->andFilterWhere(['t.survey_name' => $selectedSurvey]);
+        ])->andFilterWhere(['t.survey_name' => $selectedSurvey])
+        ->andFilterWhere(['t.criteria'.$selectedCriteria.'_color_id' => $color_survey]);
 
         // Construct the base query
         $query = (new \yii\db\Query())
@@ -2345,13 +2209,26 @@ t.*,
                 'ROUND(COUNT(DISTINCT s.household_no) / COUNT(DISTINCT h.no) * 100, 2) AS survey_coverage_percent',
             ])
             ->from('tbl_barangays b')
-            ->leftJoin('tbl_households h', 'b.no = h.barangay_id')
-            ->leftJoin(
+            ->leftJoin('tbl_households h', 'b.no = h.barangay_id');
+           
+            
+        if($color_survey){
+            $query->leftJoin(
                 'tbl_specialsurvey s',
+                
+                's.barangay = b.name AND s.household_no = h.no AND s.survey_name = :survey_name AND s.criteria'.$selectedCriteria.'_color_id =:color_survey'
+                // 's.barangay = b.name AND s.household_no = h.no AND s.survey_name = :survey_name'
+            )
+            ->addParams([':color_survey' => $color_survey])
+            ->addParams([':survey_name' => $selectedSurvey]);
+        }else{
+            $query->leftJoin(
+                'tbl_specialsurvey s',
+                
                 's.barangay = b.name AND s.household_no = h.no AND s.survey_name = :survey_name'
             )
             ->addParams([':survey_name' => $selectedSurvey]);
-
+        }
         // Group and order the results
         $query->groupBy('b.name')
             ->orderBy('b.name');
@@ -2385,6 +2262,7 @@ t.*,
                 'filters' => [
                     'survey_name' => $selectedSurvey,
                     'criteria' => $selectedCriteria,
+                    'color' => $color_survey,
                 ],
                 'chartData' => json_encode($results),  // Encode to JSON for JS
                 
@@ -2392,11 +2270,18 @@ t.*,
     
         }
 
+        $survey_colors = Specialsurvey::surveyColorReIndex();
+        $colorData = [];
+
+        foreach ($survey_colors as $key => $color) {
+            $colorData[$key] = $color['label'] . ' voters';
+        }
+
         return $this->render('canvassing_coverage_progress', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
             'chartData' => json_encode($results),  // Encode to JSON for JS
-
+            'colorData' => $colorData,
         ]);
 
         
@@ -2404,6 +2289,8 @@ t.*,
 
 
     public function actionProjectTurnout(){
+
+        // $projectTurnout = 
 
         return $this->render('project_turnout');
     }
