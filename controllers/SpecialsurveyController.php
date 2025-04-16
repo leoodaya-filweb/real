@@ -1403,14 +1403,14 @@ t.*,
     
         $searchModel = new SpecialsurveySearch();
 
-        // if($unregistered==1){
-        //     $dataProvider = $searchModel->searchSummaryForUnregisteredVoters(['SpecialsurveySearch' => $queryParams]);
+        if($unregistered==1){
+            $dataProvider = $searchModel->searchSummaryForUnregisteredVoters(['SpecialsurveySearch' => $queryParams]);
 
-        // }else{
-        //     $dataProvider = $searchModel->searchsummary(['SpecialsurveySearch' => $queryParams]);
+        }else{
+            $dataProvider = $searchModel->searchsummary(['SpecialsurveySearch' => $queryParams]);
 
-        // }
-        $dataProvider = $searchModel->searchsummary(['SpecialsurveySearch' => $queryParams]);
+        }
+        // $dataProvider = $searchModel->searchsummary(['SpecialsurveySearch' => $queryParams]);
     
         $color_survey = $queryParams['color_survey'];
         if ($color_survey) {
@@ -1593,9 +1593,9 @@ t.*,
             ->innerJoin(['hs' => 'tbl_households'], 'm.household_id = hs.id')
             ->innerJoin(['b' => 'tbl_barangays'], 'hs.barangay_id = b.no')
             ->where(['m.voter' => [0, 2]])
-            ->andFilterWhere(['b.name' => $queryParams['barangay'] ?? null])
-            ->andFilterWhere(['hs.purok_no' => $queryParams['purok'] ?? null])
-            ->andFilterWhere(['hs.no' => $queryParams['household_no'] ?? null])
+            ->andFilterWhere(['s.barangay' => $queryParams['barangay'] ?? null])
+            ->andFilterWhere(['s.purok' => $queryParams['purok'] ?? null])
+            ->andFilterWhere(['s.household_no' => $queryParams['household_no'] ?? null])
             ->andFilterWhere(['s.criteria'.$criteria.'_color_id' => $color_survey])
             ->andFilterWhere(['s.survey_name' =>$queryParams['survey_name']])
             ->orderBy(['b.name' => SORT_ASC, 's.id' => SORT_ASC])
@@ -1614,11 +1614,28 @@ t.*,
                 return "Family Head not found.";
             }
         
-            $voters = Specialsurvey::find()->alias('t')
+            if($unregistered==1){
+                $voters = Specialsurvey::find()->alias('t')
+                ->select(['t.*', '(t.criteria' . $criteria . '_color_id) as criteria1_color_id'])
+                ->leftJoin(['m' => 'tbl_members'],
+                'LOWER(TRIM(m.last_name)) = LOWER(TRIM(t.last_name)) AND ' .
+                    'LOWER(TRIM(m.first_name)) = LOWER(TRIM(t.first_name)) AND ' .
+                    'LOWER(TRIM(m.middle_name)) = LOWER(TRIM(t.middle_name))'
+                )
+                ->where(['t.household_no' => $hs])
+                ->andFilterWhere(['t.survey_name' => $queryParams['survey_name']])
+                ->andWhere(['m.voter' => [0, 2]]) // only unregistered voters
+                ->all();
+
+            }else{
+                $voters = Specialsurvey::find()->alias('t')
                 ->select(['t.*, (t.criteria' . $criteria . '_color_id) as criteria1_color_id'])
                 ->where(['household_no' => $hs])
+              
                 ->andFilterWhere(['t.survey_name' => $queryParams['survey_name']])
                 ->all();
+            }
+           
         
             $survey_color = Specialsurvey::surveyColorReIndex();
             $output = null;
@@ -1626,16 +1643,49 @@ t.*,
             if ($voters) {
                 $output .= '<div>';
                 $output .= 'Family Head: ' . ucfirst(strtolower($familyHead->last_name)) . ", " . ucfirst(strtolower($familyHead->first_name)) . " " . ucfirst(strtolower($familyHead->middle_name)) . '<br/>';
-                $output .= "Total Voters: " . count($voters);
+                // $output .= "Total Voters: " . count($voters);
         
+
+
+                if($unregistered==1){
+                 
+                    $output .= "Total Unregistered Voters: " . count($voters);
+        
+                }else{
+                    $output .= "Total Voters: " . count($voters);
+        
+                }
                 $output .= '<div class="container-fluid row gap-3 justify-content-center mt-1">';
         
                 $counter = 0;
                 foreach ($survey_color as $color_id => $color_data) {
-                    $totalVoters = Specialsurvey::find()
+
+                    if($unregistered==1){
+                        $totalVoters = Specialsurvey::find()->alias('t')
+                        ->leftJoin(['m' => 'tbl_members'],
+                        'LOWER(TRIM(m.last_name)) = LOWER(TRIM(t.last_name)) AND ' .
+                            'LOWER(TRIM(m.first_name)) = LOWER(TRIM(t.first_name)) AND ' .
+                            'LOWER(TRIM(m.middle_name)) = LOWER(TRIM(t.middle_name))'
+                        )
+                        ->where([
+                            't.household_no' => $hs,
+                            't.criteria' . $criteria . '_color_id' => $color_id,
+                        ])
+                        ->andFilterWhere(['t.survey_name' => $queryParams['survey_name']])
+                        ->andWhere(['m.voter' => [0, 2]]) // only unregistered voters
+                        ->count();
+        
+                    }else{
+                        $totalVoters = Specialsurvey::find()
                         ->where(['household_no' => $hs, 'criteria' . $criteria . '_color_id' => $color_id])
                         ->andFilterWhere(['survey_name' => $queryParams['survey_name']])
                         ->count();
+
+                    }
+                  
+
+                   
+
         
                     if ($counter % 2 === 0) {
                         $output .= '<div class="d-flex gap-3 justify-content-center mb-3" style="width: 100%;">';
@@ -2100,10 +2150,10 @@ t.*,
             //  $dataProvider->query->andFilterWhere(['t.criteria'.$criteria.'_color_id' => $color_survey]);
         }
 
-        $barangay = trim($queryParams['barangay'] ?? '');
-        $purok = trim($queryParams['purok'] ?? '');
-        $surveyName = trim($queryParams['survey_name'] ?? '');
-        $colorSurvey = !empty($queryParams['color_survey']) ? explode(',', $queryParams['color_survey']) : [];
+        // $barangay = trim($queryParams['barangay'] ?? '');
+        // $purok = trim($queryParams['purok'] ?? '');
+        // $surveyName = trim($queryParams['survey_name'] ?? '');
+        // $colorSurvey = !empty($queryParams['color_survey']) ? explode(',', $queryParams['color_survey']) : [];
 
         $query = Specialsurvey::find()
             ->alias('s')
@@ -2117,6 +2167,7 @@ t.*,
             ->where(['m.voter' => [0, 2]])
             // ->andFilterWhere(['b.name' => $queryParams['barangay']])
             // ->andFilterWhere(['hs.purok_no' => $queryParams['purok']])
+            ->andFilterWhere(['s.household_no' => $queryParams['household_no']])
             ->andFilterWhere(['s.barangay' => $queryParams['barangay']])
             ->andFilterWhere(['s.purok' => $queryParams['purok']])
             ->andFilterWhere(['s.survey_name' => $queryParams['survey_name']])
@@ -2129,18 +2180,6 @@ t.*,
                 'defaultOrder' => ['id' => SORT_ASC],
             ],
         ]);
-        
-
- 
-       
-        if (Yii::$app->request->isAjax) {
-        
-            return $this->renderAjax('index_list', [
-                'searchModel' => $searchModel,
-                'dataProvider' => $dataProvider,
-                'survey_color' => $survey_color
-            ]);
-        }
         
 
        
@@ -2372,6 +2411,105 @@ t.*,
             'colorData' => $colorData,
         ]);
     }
+
+
+     // public function actionUnregisteredVotersPopulation( $brgy = '', $hs = '')
+    // {
+    //     $queryParams = App::queryParams();
+
+    //     // ———— 1) Single-household popup ————
+    //     if ($hs) {
+    //         $household = Household::find()->where(['no' => $hs])->one();
+    //         if (!$household) {
+    //             return "Household not found.";
+    //         }
+
+    //         $familyHead = Member::find()
+    //             ->where(['household_id' => $household->id, 'head' => 1])
+    //             ->one();
+    //         if (!$familyHead) {
+    //             return "Family Head not found.";
+    //         }
+
+    //         // Count unregistered voters in this household
+    //         $count = (new \yii\db\Query())
+    //             ->from('tbl_members')
+    //             ->where(['household_id' => $household->id])
+    //             ->andWhere(['voter' => [0, 2]])
+    //             ->count();
+
+    //         return "
+    //             <div>
+    //                 Family Head: " . 
+    //                     ucfirst(strtolower($familyHead->last_name)) . ", " .
+    //                     ucfirst(strtolower($familyHead->first_name)) . " " .
+    //                     ucfirst(strtolower($familyHead->middle_name)) . "<br/>
+    //                 Unregistered Voters: {$count}
+    //             </div>
+    //         ";
+    //     }
+
+    //     // ———— 2) brgy=1: return all barangays as before ————
+    //     if ($brgy == 1) {
+    //         $features = [];
+    //         foreach (Barangay::find()->all() as $row) {
+    //             $features[] = [
+    //                 "type" => "Feature",
+    //                 "properties" => [
+    //                     "id" => $row->id,
+    //                     "name" => $row->name,
+    //                 ],
+    //                 "geometry" => [
+    //                     "type" => "Point",
+    //                     "coordinates" => [(float)$row->longitude, (float)$row->latitude]
+    //                 ]
+    //             ];
+    //         }
+
+    //         return $this->asJsonNumeric([
+    //             "type" => "FeatureCollection",
+    //             "features" => $features,
+    //         ]);
+    //     }
+
+    //     // ———— 3) Main map: unregistered voters only ————
+    //     $rows  = (new \yii\db\Query())
+    //         ->select([
+    //             'm.id AS member_id',
+    //             'm.first_name', 'm.middle_name', 'm.last_name',
+    //             'h.latitude', 'h.longitude',
+    //             'h.no as household_no'
+    //         ])
+    //         ->from('tbl_members m')
+    //         ->leftJoin('tbl_households h', 'm.household_id = h.id')
+    //         ->leftJoin('tbl_barangays b', 'h.barangay_id = b.id')
+    //         ->where(['m.voter' => [0, 2]])                        // only unregistered
+    //         // ->andWhere(['IS NOT', 'h.latitude', null])           // must have coords
+    //         // ->andWhere(['IS NOT', 'h.longitude', null])
+    //         ->andFilterWhere([
+    //             'b.name' => $queryParams['barangay'],            // filter by barangay name
+    //             'h.purok_no' => $queryParams['purok'],           // filter by purok noa
+    //         ])
+    //         ->all();
+    
+    //     $features = [];
+    //     foreach ($rows as $r) {
+    //         $features[] = [
+    //             "type" => "Feature",
+    //             "properties" => $r,
+    //             "geometry" => [
+    //                 "type" => "Point",
+    //                 "coordinates" => [$r['longitude'], $r['latitude']]
+    //             ]
+    //         ];
+    //     }
+
+    //     return $this->asJsonNumeric([
+    //         "type" => "FeatureCollection",
+    //         "features" => $features,
+    //     ]);
+    // }
+
     
     
 
