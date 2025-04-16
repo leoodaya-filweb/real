@@ -1644,9 +1644,7 @@ t.*,
                 $output .= '<div>';
                 $output .= 'Family Head: ' . ucfirst(strtolower($familyHead->last_name)) . ", " . ucfirst(strtolower($familyHead->first_name)) . " " . ucfirst(strtolower($familyHead->middle_name)) . '<br/>';
                 // $output .= "Total Voters: " . count($voters);
-        
-
-
+    
                 if($unregistered==1){
                  
                     $output .= "Total Unregistered Voters: " . count($voters);
@@ -1674,6 +1672,7 @@ t.*,
                         ->andFilterWhere(['t.survey_name' => $queryParams['survey_name']])
                         ->andWhere(['m.voter' => [0, 2]]) // only unregistered voters
                         ->count();
+                        
         
                     }else{
                         $totalVoters = Specialsurvey::find()
