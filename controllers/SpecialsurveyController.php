@@ -22,7 +22,7 @@ use app\models\search\SpecialsurveySearch;
 use yii\data\ActiveDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\data\Pagination;
-
+use yii\db\Query;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
 use yii\web\Response;
@@ -2288,12 +2288,91 @@ t.*,
     }
 
 
-    public function actionProjectTurnout(){
+    public function actionProjectTurnout()
+    {
+        $queryParams = Yii::$app->request->queryParams;
+        $colorId = $queryParams['color'] ?? 1;
+        $surveyName = $queryParams['survey_name'] ?? 'Survey 5';
+        $turnoutRate = 0.8;
+    
+        $sql = "
+            SELECT 
+                tv.barangay,
+                tv.total_voters,
+                tv.total_registered,
+                sv.support_voters,
+                sv.total_canvassed,
+                sv.support_rate,
+                ROUND(sv.support_rate * tv.total_registered * :turnout_rate, 2) AS projected_votes
+            FROM (
+                SELECT 
+                    b.name AS barangay,
+                    COUNT(DISTINCT m.id) AS total_voters,
+                    SUM(CASE WHEN m.voter = 1 THEN 1 ELSE 0 END) AS total_registered
+                FROM tbl_members m
+                INNER JOIN tbl_households hs ON m.household_id = hs.id
+                INNER JOIN tbl_barangays b ON hs.barangay_id = b.no
+                GROUP BY b.name
+            ) AS tv
+            LEFT JOIN (
+                SELECT 
+                    b.name AS barangay,
+                    SUM(CASE WHEN s.criteria1_color_id = :color_id THEN 1 ELSE 0 END) AS support_voters,
+                    COUNT(DISTINCT s.id) AS total_canvassed,
+                    ROUND(
+                        CASE 
+                            WHEN COUNT(DISTINCT s.id) = 0 THEN 0
+                            ELSE SUM(CASE WHEN s.criteria1_color_id = :color_id THEN 1 ELSE 0 END) * 1.0 / COUNT(DISTINCT s.id)
+                        END,
+                        2
+                    ) AS support_rate
+                FROM tbl_specialsurvey s
+                INNER JOIN tbl_members m 
+                    ON LOWER(TRIM(m.last_name)) = LOWER(TRIM(s.last_name)) 
+                    AND LOWER(TRIM(m.first_name)) = LOWER(TRIM(s.first_name)) 
+                    AND LOWER(TRIM(m.middle_name)) = LOWER(TRIM(s.middle_name))
+                INNER JOIN tbl_households hs ON m.household_id = hs.id
+                INNER JOIN tbl_barangays b ON hs.barangay_id = b.no
+                WHERE s.survey_name = :survey_name AND m.voter = 1
+                GROUP BY b.name
+            ) AS sv ON sv.barangay = tv.barangay
+            ORDER BY tv.barangay
+        ";
+    
+        $result = Yii::$app->db->createCommand($sql)
+            ->bindValues([
+                ':color_id' => $colorId,
+                ':survey_name' => $surveyName,
+                ':turnout_rate' => $turnoutRate,
+            ])
+            ->queryAll();
+    
+        // Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        // return $result;
 
-        // $projectTurnout = 
+        if (Yii::$app->request->isAjax) {
+            Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+            return [
+                'chart_data_json' => array_column($result, 'projected_votes'),
+                'color_labels_json' => array_column($result, 'barangay'),
+                'table_html' => $this->renderPartial('_turnout_table', ['datas' => $result]),
+            ];
+        }
+        
+        $survey_colors = Specialsurvey::surveyColorReIndex();
+        $colorData = [];
 
-        return $this->render('project_turnout');
+        foreach ($survey_colors as $key => $color) {
+            $colorData[$key] = $color['label'] . ' voters';
+        }
+        return $this->render('project_turnout',[
+            'datas' => $result,
+            'chart_data_json' => array_column($result, 'projected_votes'),
+            'color_labels_json' => array_column($result, 'barangay'),
+            'colorData' => $colorData,
+        ]);
     }
+    
     
 
 

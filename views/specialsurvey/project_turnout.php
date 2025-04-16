@@ -26,144 +26,181 @@
 
   
     $this->registerJs(<<<JS
-         
-        $(document).ready(function () {
-            renderChart({$chart_data_json},{$color_labels_json});
           
-            
-            
+          
+        $(document).ready(function () {
+            var survey_name = $('#select-survey').val();
+            var criteria = $('#select-criteria').val();
+            var color = $('#select-color').val() ?? null;
 
-            $('.filter-select').change(function () {
-                var barangay = $('#select-barangay').val();
-                var criteria = $('#select-criteria').val();
-                var color = $('#color-select').val();
+            $.ajax({
+                url: '/real/web/specialsurvey/project-turnout',
+                method: 'get',
+                data: { survey_name, criteria, color },
+                success: function (response) {
+                    const data = response.chart_data_json;
+                    const label = response.color_labels_json;
 
-                var selectedPurok = $('#select-purok').val();
-                if ($(this).attr('id') === 'select-barangay') {
-                    selectedPurok = ""; // Reset purok if barangay changes
-                }
-
-                $.ajax({
-                    url: '/real/web/specialsurvey/voter-segmentation-by-sector',
-                    method: 'get',
-                    data: { barangay, purok: selectedPurok, criteria, color },
-                    success: function (response) {
-                    const data = JSON.parse(response.chart_data_json);
-                    const label = JSON.parse(response.color_labels_json);
                     renderChart(data, label);
 
+                    $(".table-responsive tbody").html(response.table_html);
+                },
+                error: function (e) {
+                    console.log('AJAX error', e);
+                }
+            });
+           
+          
+            $('.filter-select').change(function () {
+                var survey_name = $('#select-survey').val();
+                var criteria = $('#select-criteria').val();
+                var color = $('#select-color').val();
 
-                        $("#select-purok").html('<option value="" selected>Select..</option>');
+                $.ajax({
+                    url: '/real/web/specialsurvey/project-turnout',
+                    method: 'get',
+                    data: { survey_name, criteria, color },
+                    success: function (response) {
+                        const data = response.chart_data_json;
+                        const label = response.color_labels_json;
 
-                        let purokExists = false;
+                        renderChart(data, label);
 
-                        $.each(response.purok, function (key, value) {
-                            let isSelected = selectedPurok === value.purok ? 'selected' : '';
-                            if (isSelected) purokExists = true;
-                            $("#select-purok").append('<option value="' + value.purok + '" ' + isSelected + '>' + value.purok + '</option>');
-                        });
-
-                       
-                        if (!purokExists) {
-                            $("#select-purok").val(""); // Reset to "Select.."
-                        }
-
-                       
+                        $(".table-responsive tbody").html(response.table_html);
                     },
                     error: function (e) {
                         console.log('AJAX error', e);
                     }
                 });
             });
+
+            
+
+            
+            
         });
 
 
         function renderChart(chart_data_json, color_labels_json) {
             let data = chart_data_json;
-            let label = color_labels_json;
+            let label = color_labels_json; // Object.keys(chart_data_json); // optional, if not passed in
 
-          
-            
+            const staticColors = [
+                '#1e88e5', '#ff7043', '#66bb6a', '#ffa726', '#ab47bc', '#00acc1', '#ffca28',
+                '#8e24aa', '#7e57c2', '#42a5f5', '#26a69a', '#f4511e', '#29b6f6', '#8d6e63',
+                '#d32f2f', '#0288d1', '#c2185b'
+            ];
+
+            // Ensure there are enough colors for the data labels
+            const colors = staticColors.slice(0, label.length);
+
             var options = {
-                series: data,
-                chart: { 
-                    type: 'bar', 
-                    height: 650, 
-                    stacked: true,
-                    toolbar: { show: false }, 
+                series: [{
+                    name: 'Projected Votes',
+                    data: data
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 650,
+                    toolbar: { show: false },
                     animations: {
                         enabled: true,
                         easing: 'easeinout',
-                        speed: 800
+                        speed: 600  // Smooth and modern animation speed
+                    },
+                    // background: '#f7f7f7',  // Light background for a clean, airy look
+                    sparkline: { enabled: false }  
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: false,
+                        columnWidth: '85%', 
+                        borderRadius: 8, 
+                        dataLabels: { position: 'top' }
                     }
                 },
-                plotOptions: { 
-                    bar: { 
-                        horizontal: false, 
-                        columnWidth: '50%', 
-                        borderRadius: 5,
-                    } 
+                stroke: { width: 0 },  // No border for the bars to keep it sleek
+                title: {
+                    text: 'Projected Votes Per Barangay',
+                    align: 'center',
+                    style: {
+                        fontSize: '26px',
+                        fontWeight: '600',  // More approachable but modern font weight
+                        color: '#333',
+                        fontFamily: "'Roboto', sans-serif",  // A modern, clean font
+                    }
                 },
-                stroke: { width: 1, colors: ['#fff'] },
-                title: { 
-                    text: 'Voter Segmentation By Sector',
-                    align: 'center', 
-                    style: { 
-                        fontSize: '26px', 
-                        fontWeight: 'bold',
-                        color: '#333' 
-                    } 
-                },
-                xaxis: { 
+                xaxis: {
                     categories: label,
-                    labels: { 
-                        style: { fontSize: '14px', fontWeight: 'bold', colors: '#333' } 
+                    labels: {
+                        style: { fontSize: '14px', fontWeight: '400', colors: '#555', fontFamily: "'Roboto', sans-serif" },
                     },
                     axisBorder: { show: true, color: '#ddd' },
                     axisTicks: { show: true, color: '#ddd' }
                 },
                 yaxis: {
-                    labels: { 
-                        style: { fontSize: '13px', colors: '#555' }
+                    labels: {
+                        style: { fontSize: '14px', fontWeight: '400', colors: '#555', fontFamily: "'Roboto', sans-serif" },
                     },
-                    title: { 
-                        text: 'Number of Voters',
-                        style: { fontSize: '16px', fontWeight: 'bold', color: '#333' }
+                    title: {
+                        text: 'Projected Votes',
+                        style: { fontSize: '16px', fontWeight: '600', color: '#333' }
                     }
                 },
-                tooltip: { 
-                    theme: 'dark', 
-                    y: { formatter: function (val) { return val + " Voters"; } } 
+                tooltip: {
+                    theme: 'light',  // Light theme tooltip to keep it user-friendly
+                    y: { formatter: function (val) { return val; } },
+                    marker: { show: true },  // Add a marker for clarity
+                    style: { fontFamily: "'Roboto', sans-serif", fontWeight: '400' }
                 },
-                fill: { opacity: 0.9 },
                 grid: {
                     borderColor: '#e0e0e0',
-                    strokeDashArray: 4,
-                    padding: { left: 10, right: 10, top: 20, bottom: 20 }
+                    strokeDashArray: 3,  // Subtle dashed grid lines
+                    padding: { left: 20, right: 20, top: 20, bottom: 20 },
                 },
-                legend: { 
-                    position: 'top', 
+                legend: {
+                    position: 'top',
                     horizontalAlign: 'right',
                     fontSize: '14px',
                     markers: { radius: 4 },
                     labels: { colors: '#333' }
                 },
-                colors: ['#D72638', '#1B98E0', '#F4A261', '#2E4057'], 
+                colors: colors,  // Using dynamic color scheme for better distinction
 
                 dataLabels: {
                     enabled: true,
-                    style: { fontSize: '13px', fontWeight: 'bold', colors: ['#fff'] },
-                    formatter: function (val, opts) {
-                        return opts.w.config.series[opts.seriesIndex].name; // Show sector name (Senior, PWD, etc.)
+                    style: { fontSize: '14px', fontWeight: '600', colors: ['#fff'] },
+                    formatter: function (val) { return val; }  // Display the vote count clearly on top of bars
+                },
+                responsive: [
+                    {
+                        breakpoint: 1024,
+                        options: {
+                            chart: { height: 500 },
+                            title: { fontSize: '22px' },
+                            xaxis: { labels: { fontSize: '12px' } }
+                        }
+                    },
+                    {
+                        breakpoint: 768,
+                        options: {
+                            chart: { height: 400 },
+                            title: { fontSize: '20px' },
+                            xaxis: { labels: { fontSize: '10px' } }
+                        }
                     }
-                }
+                ]
             };
 
-            document.querySelector("#sectorSegmentationChart").innerHTML = "";
+            // Clear existing chart if any
+            document.querySelector("#projectedVotesGraph").innerHTML = "";
 
-            var chart = new ApexCharts(document.querySelector("#sectorSegmentationChart"), options);
+            // Create and render the chart
+            var chart = new ApexCharts(document.querySelector("#projectedVotesGraph"), options);
             chart.render();
         }
+
+
 
 
 
@@ -182,32 +219,31 @@
                 <p class="lead font-weight-bold mb-0">Filters: </p>
             </div>
 
-            <div class="ml-5">
-                <select class="form-control filter-select" id="select-barangay">
-                    <?= Html::tag('option', 'All Barangay', ['value' => '']) ?>
-                    <?php foreach (Specialsurvey::filter('barangay') as $name): ?>
-                        <?= Html::tag('option', $name, [
+
+
+              <div class="ml-5">
+                <select class="form-control filter-select" id="select-survey">
+                    <?=  Html::tag('option', 'Select Survey', [
+                        'value' => '',
+                        'selected' => true,
+                    // 'disabled' => true
+                    ]) ?>
+                    <?= Html::foreach(Specialsurvey::filter('survey_name'), function($name) {
+                    
+                        $isLastSurvey = $name === end(Specialsurvey::filter('survey_name')); // Check if it's the last survey
+                        return Html::tag('option', $name, [
                             'value' => $name,
-                            'selected' => trim($searchModel->barangay) == trim($name) ? true : false
-                        ]) ?>
-                    <?php endforeach; ?>
+                            'selected' => $isLastSurvey, // Auto-select the last survey
+                        ]);
+                        // return Html::tag('option', $name, [
+                        //     'value' => $name,
+                        //     'selected' => false
+                        // ]);
+                    }) ?>
                 </select>
             </div>
-
             <div class="ml-5">
-                <select class="form-control filter-select" id="select-purok">
-                    <?= Html::tag('option', 'All Purok', ['value' => '']) ?>
-                    <?php foreach (Specialsurvey::filter('purok') as $name): ?>
-                        <?= Html::tag('option', $name, [
-                            'value' => $name,
-                            'selected' => trim($searchModel->purok) == trim($name) ? true : false
-                        ]) ?>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div class="ml-5">
-                <select class="form-control  filter-select" id="select-criteria">
+                <select class="form-control filter-select" id="select-criteria">
                     <?= Html::foreach([1, 2, 3, 4, 5], function($n) {
                         return Html::tag('option', "Criteria {$n}", [
                             'value' => $n,
@@ -216,22 +252,59 @@
                     }) ?>
                 </select>
             </div>
+          
+            
+            <div class="ml-5">
+                <select class="form-control filter-select" id="select-color">
+                    <option value="" disabled>Select Color</option>
+                    <?php foreach ($colorData as $id => $name): ?>
+                        <option value="<?= $id ?>" <?= $id === array_key_first($colorData) ? 'selected' : '' ?>><?= $name ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
 
           
         </div>
     </section>
 
 
-    <div class="mt-10">
+    <div class="mt-5">
 
     </div>
     <div class="mt-5">
 
     </div>
-    
 
-    <!-- Chart Section -->
-    <div id="sectorSegmentationChart" style="height: 500px; width: 100%; margin-top: 50px;"></div>
+    <div class="table-responsive mt-5">
+        <table class="table table-hover  table-active table-striped">
+            <thead class="text-primary bg-gradient">
+                <tr class="text-start">
+                    <th>Barangay</th>
+                    <th >Total Voters</th>
+                    <th >Total Registered Voters</th>
+                    <th >Supported Voters</th>
+                    <th >Support Rate %</th>
+                    <th >Projected Votes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($datas as $data): ?>
+                    <tr class="text-start">
+                        <td><?= Html::encode($data['barangay']) ?></td>
+                        <td ><?= Html::encode($data['total_voters']) ?></td>
+                        <td ><?= Html::encode($data['total_registered']) ?></td>
+                        <td ><?= Html::encode($data['support_voters']) ?></td>
+                        <td ><?= Html::encode(number_format($data['support_rate'], 2)) ?>%</td>
+                        <td ><?= Html::encode($data['projected_votes']) ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>    
+        </table>
+    </div>
+
+
+     <!-- Chart Section -->
+     <div id="projectedVotesGraph" style="height: 500px; width: 100%; margin-top: 10px;"></div>
 
 
 
