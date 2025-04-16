@@ -304,7 +304,7 @@ CSS, ['type' => "text/css"]);
                  
                    //Voters
                  
-                   const datasourceUrl = app.baseUrl + 'specialsurvey/population-coordinates2?unregistered=1&barangay={$searchModel->barangay}&purok={$searchModel->purok}&color_survey={$searchModel->color_survey}&criteria={$searchModel->criteria}&survey_name={$searchModel->survey_name}&keywords={$searchModel->keywords}';
+                   const datasourceUrl = app.baseUrl + 'specialsurvey/population-coordinates2?&barangay={$searchModel->barangay}&purok={$searchModel->purok}&color_survey={$searchModel->color_survey}&criteria={$searchModel->criteria}&survey_name={$searchModel->survey_name}&keywords={$searchModel->keywords}';
             
                 
                    map.addSource('voters', {
@@ -371,7 +371,7 @@ CSS, ['type' => "text/css"]);
                                         return $(this).val();
                                         }).get();
                                    
-                                   const voterslisUrl = app.baseUrl + 'specialsurvey/population-coordinates2?unregistered=1&hs='+householdNo+'&barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
+                                   const voterslisUrl = app.baseUrl + 'specialsurvey/population-coordinates2?beneficiaries=1&hs='+householdNo+'&barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
                                    $.ajax({
                                        url: voterslisUrl,
                                        method: 'get',
@@ -385,7 +385,7 @@ CSS, ['type' => "text/css"]);
                                        
                                    });
 
-                                   const urllist = app.baseUrl + 'specialsurvey/registered-vs-unregistered-voters?barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok+'&household_no='+householdNo;
+                                   const urllist = app.baseUrl + 'specialsurvey/voter-social-assistance-beneficiaries?barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok+'&household_no='+householdNo;
                         
                                     $.ajax({
                                         url: urllist,
@@ -482,7 +482,7 @@ CSS, ['type' => "text/css"]);
                         
                          const url2 = url;
                         $.ajax({
-                            url: url2 + "&graph=1&unregistered=1",
+                            url: url2 + "&graph=1&",
                             method: 'get',
                             dataType: 'html',
                             success: (s) => {
@@ -539,14 +539,14 @@ CSS, ['type' => "text/css"]);
                         //console.log(color_survey);
                         
                         
-                         const datasourceUrl2 = app.baseUrl + 'specialsurvey/population-coordinates2?unregistered=1&barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
+                         const datasourceUrl2 = app.baseUrl + 'specialsurvey/population-coordinates2?&barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
                          map.getSource('voters').setData(datasourceUrl2);
 
                          changePaint(dataUrl + '?barangay='+barangay+'&criteria=' + criteria + '&survey_name=' + (survey_name || '')+ '&date_range=' + date_survey+'&color_survey='+color_survey+'&purok='+purok);
                          
                          
                          
-                        const urllist = app.baseUrl + 'specialsurvey/registered-vs-unregistered-voters?barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
+                        const urllist = app.baseUrl + 'specialsurvey/voter-social-assistance-beneficiaries?barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
                         
                         $.ajax({
                             url: urllist,
@@ -562,29 +562,7 @@ CSS, ['type' => "text/css"]);
                             }
                         });
 
-                        const urGraph = app.baseUrl + 'specialsurvey/unregistered-voters-population?&barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
-
-                        $.ajax({
-                            url: urGraph,
-                            method: 'get',
-                            dataType: 'html',
-                            success: (s) => {
-                                // const chartData = JSON.parse(s.chartData);
-                                // const barangayLabels = JSON.parse(s.barangayLabels);
-                                // document.querySelector("#registered-vs-unregistered-graph").innerHTML = "";
-
-                                // renderChart(chartData, barangayLabels);
-                                $('#registered-vs-unregistered-graph').html("");   
-                                $('#registered-vs-unregistered-graph').html(s);   
-
-                            },
-
-                            error: (e) => {
-                                console.log('e', e)
-                            
-                            }
-                        });
-                         
+                    
                          
                          
                          
@@ -633,7 +611,7 @@ CSS, ['type' => "text/css"]);
 
                     
                             
-                             const datasourceUrl2 = app.baseUrl + 'specialsurvey/population-coordinates2?unregistered=1&barangay='+barangay+'&criteria='+criteria+'&survey_name=' + (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
+                             const datasourceUrl2 = app.baseUrl + 'specialsurvey/population-coordinates2?&barangay='+barangay+'&criteria='+criteria+'&survey_name=' + (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
                              map.getSource('voters').setData(datasourceUrl2);
                               
                               
@@ -641,7 +619,7 @@ CSS, ['type' => "text/css"]);
                              changePaint(dataUrl + '?barangay='+barangay+'&criteria=' + criteria + '&survey_name=' + (survey_name || '')+ '&date_range=' + date_survey+'&color_survey='+color_survey+'&purok='+purok);
                              
                              
-                             const urllist = app.baseUrl + 'specialsurvey/registered-vs-unregistered-voters?barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
+                             const urllist = app.baseUrl + 'specialsurvey/voter-social-assistance-beneficiaries?barangay='+barangay+'&criteria='+criteria+'&survey_name='+ (survey_name || '')+'&color_survey='+color_survey+'&purok='+purok;
                         
                            $.ajax({
                             url: urllist,
@@ -739,10 +717,16 @@ CSS, ['type' => "text/css"]);
  
 
 
- 
-    <div id="content-listing">
+ <div id="content-listing">
+        <?= Html::beginForm(['bulk-action'], 'post'); ?>
+            <?= BulkAction::widget(['searchModel' => $searchModel]) ?>
+            <?= Grid::widget([
+                'dataProvider' => $dataProvider,
+                'searchModel' => $searchModel,
+            ]); ?>
+        <?= Html::endForm(); ?> 
       
-   
+                    
     </div>
     
     

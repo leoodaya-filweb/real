@@ -2052,60 +2052,89 @@ t.*,
     }
     
 
-    public function actionVoterSocialAssistanceBeneficiaries($criteria= null){
+    public function actionVoterSocialAssistanceBeneficiaries($criteria = 1)
+    {
         $survey_color = Specialsurvey::surveyColorReIndex();
-		
-        $searchModel = new SpecialsurveySearch();
-
-        
-        $queryParams=App::queryParams();
-        
-         if (isset($queryParams['criteria1_color_id'])) {
-			unset($queryParams['criteria1_color_id']);
-			$criteria = $criteria ?: 1;
-		}
-		if (isset($queryParams['criteria2_color_id'])) {
-			unset($queryParams['criteria2_color_id']);
-			$criteria = $criteria ?: 2;
-		}   
-		if (isset($queryParams['criteria3_color_id'])) {
-			unset($queryParams['criteria3_color_id']);
-			$criteria = $criteria ?: 3;
-		}
-		if (isset($queryParams['criteria4_color_id'])) {
-			unset($queryParams['criteria4_color_id']);
-			$criteria = $criteria ?: 4;
-		}
-		if (isset($queryParams['criteria5_color_id'])) {
-			unset($queryParams['criteria5_color_id']);
-			$criteria = $criteria ?: 5;
-		}
-		$criteria = $criteria ?: 1;
-        
-        $dataProvider = $searchModel->search(['SpecialsurveySearch' =>  $queryParams]);
-        
-        
-        
-        $criteria=2;    
-        $dataProvider->query->select(['
-                t.*, 
-                (t.criteria'.$criteria.'_color_id) as criteria1_color_id
-                ']);
-        
-        $color_survey = $queryParams['color_survey'];
-        if($color_survey){
-        $color_survey = explode(',', $color_survey);
-        $dataProvider->query->andFilterWhere(['t.criteria'.$criteria.'_color_id' => $color_survey]);
+        $queryParams = App::queryParams();
+    
+        // Determine criteria
+        foreach (range(1, 5) as $i) {
+            if (!empty($queryParams["criteria{$i}_color_id"])) {
+                unset($queryParams["criteria{$i}_color_id"]);
+                $criteria = $criteria ?: $i;
+            }
         }
-
-
-        return $this->render('voter_social_assistance_beneficiaries', [
-            'searchModel' => $searchModel,
-            'dataProvider' => $dataProvider,
-			'survey_color'=>$survey_color
-        ]);
+        $criteria = $criteria ?: 1;
+    
+        // Extract and prepare filters
+        $color_survey = !empty($queryParams['color_survey']) 
+            ? explode(',', $queryParams['color_survey']) 
+            : [];
         
+        // Get additional filters from URL parameters
+        $barangay = trim($queryParams['barangay'] ?? '');
+        $purok = trim($queryParams['purok'] ?? '');
+        $survey_name = trim($queryParams['survey_name'] ?? '');
+    
+        // Build the query manually using ActiveQuery for full model support
+        $query = Specialsurvey::find()
+            ->alias('s')
+            ->innerJoin(['m' => 'tbl_members'], 
+                'LOWER(TRIM(m.last_name)) = LOWER(TRIM(s.last_name)) 
+                AND LOWER(TRIM(m.first_name)) = LOWER(TRIM(s.first_name)) 
+                AND LOWER(TRIM(m.middle_name)) = LOWER(TRIM(s.middle_name))')
+            ->innerJoin(['t' => 'tbl_transactions'], 'm.id = t.member_id')
+            ->leftJoin(['hs' => 'tbl_households'], 'hs.no = s.household_no')
+            ->where(['s.survey_name' => 'Survey 1'])
+            ->select([
+                's.*',
+                "s.criteria{$criteria}_color_id AS criteria1_color_id",
+                'hs.no AS household_no',
+                'hs.barangay_id'
+            ]);
+    
+        // Apply additional filters from URL parameters
+        if ($barangay) {
+            $query->andWhere(['s.barangay' => $barangay]);
+        }
+        if ($purok) {
+            $query->andWhere(['s.purok' => $purok]);
+        }
+        if ($survey_name) {
+            $query->andWhere(['s.survey_name' => $survey_name]);
+        }
+    
+        // Optional filtering by survey color
+        if (!empty($color_survey)) {
+            $query->andWhere(["s.criteria{$criteria}_color_id" => $color_survey]);
+        }
+    
+        $searchModel = new SpecialsurveySearch();
+        // Prepare Data Provider
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+            'pagination' => ['pageSize' => 20], // you can adjust page size here
+        ]);
+    
+
+        if (Yii::$app->request->isAjax) {
+           
+            return $this->renderAjax('index_list', [
+                'searchModel' => $searchModel,
+                'dataProvider' => $dataProvider,
+                'survey_color'=>$survey_color
+            ]);
+               
+        }
+        return $this->render('voter_social_assistance_beneficiaries', [
+            'dataProvider' => $dataProvider,
+            'searchModel' => $searchModel,
+            'survey_color' => $survey_color
+        ]);
     }
+    
+
+
 
 
     public function actionRegisteredVsUnregisteredVoters($list = null,$criteria = null)
